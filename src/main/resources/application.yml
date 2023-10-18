@@ -1,0 +1,14 @@
+spring:
+  #数据源配置
+  data:
+    mongodb:
+      # 主机地址
+      host: localhost
+      # 数据库
+      database: test
+      # 默认端口是27017
+      port: 27017
+
+  redis:
+    host: localhost
+    port: 6379
