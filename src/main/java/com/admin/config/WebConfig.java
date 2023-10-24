@@ -16,6 +16,7 @@ import java.util.List;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
       // 设置允许跨域的路径
@@ -40,7 +41,7 @@ public class WebConfig implements WebMvcConfigurer {
         fastJsonConfig.setSerializerFeatures(SerializerFeature.PrettyFormat);
         fastJsonConfig.setDateFormat("yyyy-MM-dd HH:mm:ss");
 
-        SerializeConfig.globalInstance.put(Long.class, ToStringSerializer.instance);
+        SerializeConfig.globalInstance.put(String.class, ToStringSerializer.instance);
 
         fastJsonConfig.setSerializeConfig(SerializeConfig.globalInstance);
         fastConverter.setFastJsonConfig(fastJsonConfig);

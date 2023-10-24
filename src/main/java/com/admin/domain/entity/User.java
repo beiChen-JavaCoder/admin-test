@@ -4,17 +4,19 @@ import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.Date;
 
 /**
  * 用户表(User)表实体类
  *
- * @author makejava
+ * @author xqf
  * @since 2022-02-03 16:25:40
  */
 @SuppressWarnings("serial")
@@ -23,8 +25,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Document("sys_user")
 @ApiModel("用户信息实体类")
-public class User {
-
+public class User implements Serializable {
 
     //主键@TableId
     @MongoId
@@ -32,9 +33,11 @@ public class User {
     //用户名
     @Field("user_name")
     private String userName;
+    @Field("nick_name")
     //昵称
     private String nickName;
     //密码
+    @Field("pass_word")
     private String password;
     //用户类型：0代表普通用户，1代表管理员
     private String type;

@@ -5,10 +5,13 @@ import com.admin.domain.entity.LoginUser;
 import com.admin.domain.entity.User;
 import com.admin.domain.vo.UserInfoVo;
 import com.admin.domain.vo.adminUserLoginVo;
+import com.admin.enums.AppHttpCodeEnum;
+import com.admin.exception.SystemException;
 import com.admin.service.LoginService;
 import com.admin.utils.BeanCopyUtils;
 import com.admin.utils.JwtUtil;
 import com.admin.utils.RedisCache;
+import com.admin.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,11 +35,11 @@ public class LoginServiceImp implements LoginService {
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
         //判断是否认证通过
         if(Objects.isNull(authenticate)){
-            throw new RuntimeException("用户名或密码错误");
+            throw new SystemException(AppHttpCodeEnum.LOGIN_ERROR);
         }
         //获取userid 生成token
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
-        String userId = loginUser.getUser().getId().toString();
+        String userId = loginUser.getUser().getId()+"";
         String jwt = JwtUtil.createJWT(userId);
         //把用户信息存入redis
         redisCache.setCacheObject("login:"+userId,loginUser);
@@ -50,13 +53,11 @@ public class LoginServiceImp implements LoginService {
 
     @Override
     public ResponseResult logout() {
-        //获取token 解析获取userid
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
-        //获取userid
-        String userId = loginUser.getUser().getId();
-        //删除redis中的用户信息
+        //获取当前登录的用户id
+        String userId = SecurityUtils.getUserId();
+        //删除redis中对应的值
         redisCache.deleteObject("login:"+userId);
+
         return ResponseResult.okResult();
     }
 }
