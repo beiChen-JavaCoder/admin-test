@@ -28,7 +28,7 @@ import java.util.Date;
 public class User implements Serializable {
 
     //主键@TableId
-    @MongoId
+
     private String id;
     //用户名
     @Field("user_name")

@@ -3,10 +3,13 @@ package com.admin.controller;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.LoginUser;
 import com.admin.domain.entity.User;
+import com.admin.domain.vo.AdminUserInfoVo;
 import com.admin.domain.vo.UserInfoVo;
 import com.admin.enums.AppHttpCodeEnum;
 import com.admin.exception.SystemException;
 import com.admin.service.LoginService;
+import com.admin.service.MenuService;
+import com.admin.service.RoleService;
 import com.admin.utils.BeanCopyUtils;
 import com.admin.utils.SecurityUtils;
 import io.swagger.annotations.Api;
@@ -25,6 +28,11 @@ public class LoginController {
 
     @Autowired
     private LoginService loginService;
+    @Autowired
+    private MenuService menuService;
+    @Autowired
+    private RoleService roleService;
+
 
 
     @PostMapping("/user/login")
