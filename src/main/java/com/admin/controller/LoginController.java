@@ -2,6 +2,8 @@ package com.admin.controller;
 
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.LoginUser;
+import com.admin.domain.entity.Menu;
+import com.admin.domain.entity.RoutersVo;
 import com.admin.domain.entity.User;
 import com.admin.domain.vo.AdminUserInfoVo;
 import com.admin.domain.vo.UserInfoVo;
@@ -57,7 +59,6 @@ public class LoginController {
         List<String> perms = menuService.selectPermsByUserId(loginUser.getUser().getId());
         //根据用户id查询角色信息
         List<String> roleKeyList = roleService.selectRoleKeyByUserId(loginUser.getUser().getId());
-
         //获取用户信息
         User user = loginUser.getUser();
         UserInfoVo userInfoVo = BeanCopyUtils.copyBean(user, UserInfoVo.class);
@@ -66,5 +67,13 @@ public class LoginController {
         AdminUserInfoVo adminUserInfoVo = new AdminUserInfoVo(perms,roleKeyList,userInfoVo);
         return ResponseResult.okResult(adminUserInfoVo);
 
+    }
+    @GetMapping("getRouters")
+    public ResponseResult<RoutersVo> getRouters(){
+        String userId = SecurityUtils.getUserId();
+        //查询menu 结果是tree的形式
+        List<Menu> menus = menuService.selectRouterMenuTreeByUserId(userId);
+        //封装数据返回
+        return ResponseResult.okResult(new RoutersVo(menus));
     }
 }

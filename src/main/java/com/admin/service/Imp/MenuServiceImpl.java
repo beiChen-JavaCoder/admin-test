@@ -1,30 +1,24 @@
 package com.admin.service.Imp;
 
+
 import com.admin.constants.SystemConstants;
-import com.admin.dao.MenuRepository;
 import com.admin.domain.entity.Menu;
-import com.admin.domain.entity.UserRole;
 import com.admin.service.MenuService;
-import com.admin.utils.SecurityUtils;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.*;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.LookupOperation;
-import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.lookup;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
+import static com.sun.javafx.robot.impl.FXRobotHelper.getChildren;
 
 
 /**
@@ -46,8 +40,7 @@ public class MenuServiceImpl  implements MenuService {
 
             Query query = new Query();
             query.addCriteria(Criteria.where("menu_type").in(SystemConstants.MENU, SystemConstants.BUTTON));
-            query.addCriteria(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
-
+            query.addCriteria(Criteria.where("status").is(Integer.valueOf(SystemConstants.STATUS_NORMAL)));
             List<Menu> menus = mongoTemplate.find(query, Menu.class);
             List<String> perms = menus.stream()
                     .map(Menu::getPerms)
@@ -82,25 +75,17 @@ public class MenuServiceImpl  implements MenuService {
 //        return perms;
 //    }
 //
-//    @Override
-//    public List<Menu> selectRouterMenuTreeByUserId(Long userId) {
-//        MenuMapper menuMapper = getBaseMapper();
-//        List<Menu> menus = null;
-//        //判断是否是管理员
-//        if(SecurityUtils.isAdmin()){
-//            //如果是 获取所有符合要求的Menu
-//            menus = menuMapper.selectAllRouterMenu();
-//        }else{
-//            //否则  获取当前用户所具有的Menu
-//            menus = menuMapper.selectRouterMenuTreeByUserId(userId);
-//        }
-//
-//        //构建tree
-//        //先找出第一层的菜单  然后去找他们的子菜单设置到children属性中
-//        List<Menu> menuTree = builderMenuTree(menus,0L);
-//        return menuTree;
-//    }
-//
+    @Override
+    public List<Menu> selectRouterMenuTreeByUserId(String userId) {
+
+        List<Menu> menus = selectAllRouterMenu();
+
+        //构建tree
+        //先找出第一层的菜单  然后去找他们的子菜单设置到children属性中
+        List<Menu> menuTree = builderMenuTree(menus,"0");
+        return menuTree;
+    }
+
 //    @Override
 //    public List<Menu> selectMenuList(Menu menu) {
 //
@@ -147,5 +132,42 @@ public class MenuServiceImpl  implements MenuService {
 //                .collect(Collectors.toList());
 //        return childrenList;
 //    }
+private List<Menu> selectAllRouterMenu() {
+    Aggregation aggregation = Aggregation.newAggregation(
+            Aggregation.match(
+                    Criteria.where("menu_type").in("C", "M")
+                            .and("status").is(0)
+                            .and("del_flag").is(0)
+            ),
+            Aggregation.project("id", "parent_id", "menu_name", "path", "component", "visible", "status", "is_frame", "menu_type", "icon", "order_num", "create_time")
+                    .and(ConditionalOperators.Cond.when(Criteria.where("perms").is(null))
+                            .then("")
+                            .otherwiseValueOf("perms"))
+                            .as("perms"));
+            Aggregation.sort(Sort.by(Sort.Direction.ASC, "parent_id", "order_num"));
+
+    AggregationResults<Menu> results = mongoTemplate.aggregate(aggregation, "sys_menu", Menu.class);
+    return results.getMappedResults();
+}
+    private List<Menu> builderMenuTree(List<Menu> menus, String parentId) {
+        List<Menu> menuTree = menus.stream()
+                .filter(menu -> menu.getParentId().equals(parentId))
+                .map(menu -> menu.setChildren(getChildren(menu, menus)))
+                .collect(Collectors.toList());
+        return menuTree;
+    }
+    /**
+     * 获取存入参数的 子Menu集合
+     * @param menu
+     * @param menus
+     * @return
+     */
+    private List<Menu> getChildren(Menu menu, List<Menu> menus) {
+        List<Menu> childrenList = menus.stream()
+                .filter(m -> m.getParentId().equals(menu.getId()))
+                .map(m->m.setChildren(getChildren(m,menus)))
+                .collect(Collectors.toList());
+        return childrenList;
+    }
 }
 

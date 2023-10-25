@@ -27,8 +27,6 @@ import java.util.Date;
 @ApiModel("用户信息实体类")
 public class User implements Serializable {
 
-    //主键@TableId
-
     private String id;
     //用户名
     @Field("user_name")
@@ -37,7 +35,7 @@ public class User implements Serializable {
     //昵称
     private String nickName;
     //密码
-    @Field("pass_word")
+    @Field("password")
     private String password;
     //用户类型：0代表普通用户，1代表管理员
     private String type;

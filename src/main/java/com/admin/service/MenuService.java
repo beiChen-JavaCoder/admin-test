@@ -1,5 +1,7 @@
 package com.admin.service;
 
+import com.admin.domain.entity.Menu;
+
 import java.util.List;
 
 /**
@@ -14,6 +16,11 @@ public interface MenuService {
      * @return
      */
     public List<String> selectPermsByUserId(String Id);
+    /**
+     * 根据用户id查询用户菜单权限树
+     *
+     */
+    public List<Menu> selectRouterMenuTreeByUserId(String userId);
 
 
 }

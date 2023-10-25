@@ -6,14 +6,15 @@ spring:
   data:
     mongodb:
       # 主机地址
-      host: localhost
+#      host: 121.41.45.228
       # 数据库
       database: test
       # 默认端口是27017
-      port: 27017
-    cassandra:
-
-
+#      port: 27017
+#      username: root
+#      password: '123456'
+#      authentication-database: admin
+      host: localhost
   redis:
     host: localhost
     port: 6379
