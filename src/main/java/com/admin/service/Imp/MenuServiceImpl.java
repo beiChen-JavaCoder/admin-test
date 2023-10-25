@@ -13,12 +13,9 @@ import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.sun.javafx.robot.impl.FXRobotHelper.getChildren;
 
 
 /**

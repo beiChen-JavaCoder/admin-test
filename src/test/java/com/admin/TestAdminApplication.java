@@ -6,6 +6,7 @@ import com.admin.AdminTest;
 import com.admin.constants.SystemConstants;
 import com.admin.dao.UserRepository;
 import com.admin.domain.entity.Menu;
+import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.entity.User;
 import javafx.scene.chart.PieChart;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import java.util.concurrent.ThreadLocalRandom;
 
 import java.util.Date;
 import java.util.List;
@@ -57,6 +59,20 @@ public class TestAdminApplication {
         query.addCriteria(Criteria.where("menu_type").in(SystemConstants.MENU, SystemConstants.BUTTON));
         List<Menu> menus = mongoTemplate.find(query, Menu.class);
         log.info(menus.toString());
+    }
+    @Test
+    void InsertMerchant(){
+        for (Integer i = 0; i<10; i++) {
+            MerchantEntity merchantEntity = new MerchantEntity();
+            merchantEntity.setId(ThreadLocalRandom.current().nextLong());
+            merchantEntity.setName("商家"+i);
+            merchantEntity.setQq(11111+i);
+            merchantEntity.setWx("11111"+i);
+            merchantEntity.setYy("11111"+i);
+            merchantEntity.setRatio(1000+i);
+            mongoTemplate.insert(merchantEntity);
+        }
+
     }
 
 
