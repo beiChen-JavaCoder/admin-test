@@ -26,7 +26,7 @@ import java.util.Date;
 @Document("sys_user")
 @ApiModel("用户信息实体类")
 public class User implements Serializable {
-
+    @Field("id")
     private String id;
     //用户名
     @Field("user_name")

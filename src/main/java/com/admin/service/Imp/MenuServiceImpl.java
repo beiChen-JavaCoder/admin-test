@@ -37,7 +37,7 @@ public class MenuServiceImpl  implements MenuService {
 
             Query query = new Query();
             query.addCriteria(Criteria.where("menu_type").in(SystemConstants.MENU, SystemConstants.BUTTON));
-            query.addCriteria(Criteria.where("status").is(Integer.valueOf(SystemConstants.STATUS_NORMAL)));
+            query.addCriteria(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
             List<Menu> menus = mongoTemplate.find(query, Menu.class);
             List<String> perms = menus.stream()
                     .map(Menu::getPerms)
@@ -133,8 +133,8 @@ private List<Menu> selectAllRouterMenu() {
     Aggregation aggregation = Aggregation.newAggregation(
             Aggregation.match(
                     Criteria.where("menu_type").in("C", "M")
-                            .and("status").is(0)
-                            .and("del_flag").is(0)
+                            .and("status").is("0")
+                            .and("del_flag").is("0")
             ),
             Aggregation.project("id", "parent_id", "menu_name", "path", "component", "visible", "status", "is_frame", "menu_type", "icon", "order_num", "create_time")
                     .and(ConditionalOperators.Cond.when(Criteria.where("perms").is(null))

@@ -1,0 +1,21 @@
+server:
+  port: 8000
+
+spring:
+  #数据源配置
+  data:
+    mongodb:
+      # 主机地址
+#      host: 121.41.45.228
+      # 数据库
+      database: game
+      # 默认端口是27017
+#      port: 27017
+      username: root
+      password: '123456'
+      authentication-database: admin
+      host: 192.168.10.62
+  redis:
+    host: localhost
+    port: 6379
+

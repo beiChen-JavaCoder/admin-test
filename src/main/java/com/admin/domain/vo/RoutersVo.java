@@ -1,5 +1,6 @@
-package com.admin.domain.entity;
+package com.admin.domain.vo;
 
+import com.admin.domain.entity.Menu;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

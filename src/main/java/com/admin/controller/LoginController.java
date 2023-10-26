@@ -3,7 +3,7 @@ package com.admin.controller;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.LoginUser;
 import com.admin.domain.entity.Menu;
-import com.admin.domain.entity.RoutersVo;
+import com.admin.domain.vo.RoutersVo;
 import com.admin.domain.entity.User;
 import com.admin.domain.vo.AdminUserInfoVo;
 import com.admin.domain.vo.UserInfoVo;
@@ -65,7 +65,9 @@ public class LoginController {
         //封装数据返回
 
         AdminUserInfoVo adminUserInfoVo = new AdminUserInfoVo(perms,roleKeyList,userInfoVo);
+        System.out.println(adminUserInfoVo.toString());
         return ResponseResult.okResult(adminUserInfoVo);
+
 
     }
     @GetMapping("getRouters")
@@ -74,6 +76,7 @@ public class LoginController {
         //查询menu 结果是tree的形式
         List<Menu> menus = menuService.selectRouterMenuTreeByUserId(userId);
         //封装数据返回
+        System.out.println(new RoutersVo(menus));
         return ResponseResult.okResult(new RoutersVo(menus));
     }
 }

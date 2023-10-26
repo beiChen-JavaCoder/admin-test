@@ -50,6 +50,7 @@ public class Menu  {
     //菜单状态（0显示 1隐藏）
     private String visible;
     //菜单状态（0正常 1停用）
+    @Field("status")
     private String status;
     //权限标识
     private String perms;

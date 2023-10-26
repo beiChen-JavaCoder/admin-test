@@ -1,41 +1,52 @@
-package com.admin.domain.entity;
+package com.admin.domain.vo;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
-
+/**
+ * @author Xqf
+ * @version 1.0
+ */
 @Data
-@Document(collection = "tb_merchant")
-@EqualsAndHashCode(callSuper = false)
-public class MerchantEntity {
-    @MongoId
+@AllArgsConstructor
+@NoArgsConstructor
+public class MerchantVo {
+
     Long id;
     /**
      * 商户名称
      */
-    @Field("name")
+
     String name;
     /**
      * QQ号
      */
-    @Field(name = "qq")
+
     long qq;
     /**
      * 微信账号
      */
-    @Field(name = "wx")
+
     String wx;
     /**
      * 歪歪账号
      */
-    @Field(name = "yy")
+
     String yy;
     /**
      * 提现比例(游戏币比例)
      */
-    @Field(name = "ratio")
+
     int ratio;
+    /**
+     * 提现数量
+     */
+    int num;
+    /**
+     * 账户类型
+     */
+    String accountType;
 }
