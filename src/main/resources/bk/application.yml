@@ -8,13 +8,13 @@ spring:
       # 主机地址
 #      host: 121.41.45.228
       # 数据库
-      database: game
+      database: test
       # 默认端口是27017
 #      port: 27017
-      username: root
-      password: '123456'
-      authentication-database: admin
-      host: 192.168.10.62
+#      username: root
+#      password: '123456'
+#      authentication-database: admin
+      host: localhost
   redis:
     host: localhost
     port: 6379

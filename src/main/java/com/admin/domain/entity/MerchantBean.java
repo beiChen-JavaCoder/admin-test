@@ -2,6 +2,7 @@ package com.admin.domain.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.MongoId;
@@ -11,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Document(collection = "tb_merchant")
 @EqualsAndHashCode(callSuper = false)
 public class MerchantBean {
-    @MongoId
+    @Id
     Long id;
     /**
      * 商户名称

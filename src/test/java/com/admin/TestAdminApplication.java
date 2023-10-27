@@ -3,11 +3,14 @@ package com.admin;
 import cn.hutool.core.date.DateUtil;
 import com.admin.constants.SystemConstants;
 import com.admin.dao.UserRepository;
+import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.Menu;
 import com.admin.domain.entity.MerchantBean;
 import com.admin.domain.dto.MerchantDto;
 import com.admin.domain.entity.User;
+import com.admin.domain.vo.PageVo;
 import com.admin.service.MerchantService;
+import com.admin.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +22,12 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -38,6 +43,8 @@ public class TestAdminApplication {
     MongoTemplate mongoTemplate;
     @Autowired
     MerchantService merchantService;
+    @Autowired
+    UserService userService;
 
     @Test
     void insertTest1(){
@@ -116,6 +123,25 @@ public class TestAdminApplication {
                     .collect(Collectors.toList());
             log.info(perms.toString()+"1111111111111111111111111111111111");
             log.info(menus.toString()+"1111111111111111111111111111111111");
+    }
+    @Test
+    void findUserPage() {
+        User user = mongoTemplate
+                .findOne(Query.query(Criteria
+                        .where("user_name")
+                        .is("test1")),User.class);
+        ResponseResult userPage = userService.findUserPage(user, 1, 5);
+        log.info(userPage.getData().toString());
+
+
+    }
+    @Test
+    void removeMerchantById(){
+        ArrayList<String> strings = new ArrayList<>(1);
+        ResponseResult<PageVo> pageVoResponseResult = merchantService.removeMerchantById(strings);
+        log.info(pageVoResponseResult.toString());
+
+
     }
 
 

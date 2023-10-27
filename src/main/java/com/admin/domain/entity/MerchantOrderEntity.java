@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import javax.persistence.Column;
 import java.util.Date;
@@ -15,12 +14,14 @@ import java.util.Date;
 @Data
 @Document(collection = "tb_merchant_order")
 @EqualsAndHashCode(callSuper = false)
-public class MerchantOrderEntity {
-    @MongoId
-    String id;
+public class MerchantOrderEntity  {
+    @Id
+    @javax.persistence.Id
+    long id;
     /**
      * 玩家编号
      */
+    @Column(name = "rid")
     long rid;
     /**
      * 商户编号
@@ -33,6 +34,11 @@ public class MerchantOrderEntity {
     @Column(name = "num")
     long num;
     /**
+     * 账号类型(提现渠道:1.微信,2.支付宝,3.银行卡)
+     */
+    @Column(name = "account_type")
+    int accountType;
+    /**
      * 收款账号
      */
     @Column(name = "payee_account")
@@ -43,8 +49,28 @@ public class MerchantOrderEntity {
     @Column(name = "payee_nickname")
     String payeeNickname;
     /**
+     * 订单状态(0.待处理,1.已处理,2.已拒绝,3.处理超时)
+     */
+    @Column(name = "status")
+    int status;
+    /**
+     * 交易凭证(仅在订单为已处理状态时使用)
+     */
+    @Column(name = "voucher")
+    String voucher;
+    /**
+     * 订单描述
+     */
+    @Column(name = "remarks")
+    String remarks;
+    /**
      * 订单创建时间
      */
     @Column(name = "create_time")
     Date createTime;
+    /**
+     * 处理超时时间(到达此时间数据未处理则进入废弃处理流程)
+     */
+    @Column(name = "time_out")
+    long timeOut;
 }

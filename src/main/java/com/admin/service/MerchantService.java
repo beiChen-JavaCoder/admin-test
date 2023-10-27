@@ -1,9 +1,10 @@
 package com.admin.service;
 
 import com.admin.domain.ResponseResult;
-import com.admin.domain.entity.MerchantBean;
 import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.PageVo;
+
+import java.util.List;
 
 /**
  * @author Xqf
@@ -12,9 +13,12 @@ import com.admin.domain.vo.PageVo;
 public interface MerchantService {
     /**
      * 商户列表页
+     *
      * @return
      */
-    PageVo getMerchantList() ;
+    ResponseResult<PageVo> findMerchantPage(MerchantVo merchantVo, Integer pageNum, Integer pageSize) ;
 
     ResponseResult insertMerchant(MerchantVo merchantVo);
+
+    ResponseResult<PageVo> removeMerchantById(List<String> id);
 }

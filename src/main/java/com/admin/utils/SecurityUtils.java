@@ -33,4 +33,5 @@ public class SecurityUtils
     public static String getUserId() {
         return getLoginUser().getUser().getId();
     }
+
 }

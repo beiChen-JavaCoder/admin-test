@@ -1,9 +1,14 @@
 package com.admin.service.Imp;
 
+import com.admin.constants.SystemConstants;
+import com.admin.domain.entity.Role;
 import com.admin.service.RoleMenuService;
 import com.admin.service.RoleService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -20,17 +25,26 @@ import java.util.stream.Collectors;
  * @since 2022-08-09 22:36:47
  */
 @Service("roleService")
-public class RoleServiceImpl  implements RoleService {
-//    @Autowired
-//    private RoleMenuService roleMenuService;
+public class RoleServiceImpl implements RoleService {
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+
     @Override
     public List<String> selectRoleKeyByUserId(String id) {
         //判断是否是管理员 如果是返回集合中只需要有admin
 
-            List<String> roleKeys = new ArrayList<>();
-            roleKeys.add("admin");
-            return roleKeys;
-        }
+        List<String> roleKeys = new ArrayList<>();
+        roleKeys.add("admin");
+        return roleKeys;
+    }
+
+    @Override
+    public List<Role> findRoleAll() {
+        Query query = Query.query(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
+        return mongoTemplate.find(query, Role.class);
+    }
 
 
 //    @Override

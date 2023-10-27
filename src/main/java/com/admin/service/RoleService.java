@@ -2,6 +2,8 @@ package com.admin.service;
 
 
 
+import com.admin.domain.entity.Role;
+
 import java.util.List;
 
 
@@ -14,6 +16,8 @@ import java.util.List;
 public interface RoleService {
 
     List<String> selectRoleKeyByUserId(String id);
+
+    List<Role> findRoleAll();
 
 //    ResponseResult selectRolePage(Role role, Integer pageNum, Integer pageSize);
 

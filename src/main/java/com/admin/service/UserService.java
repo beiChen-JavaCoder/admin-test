@@ -1,7 +1,8 @@
 package com.admin.service;
 
+import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.User;
-import org.springframework.stereotype.Service;
+import com.admin.domain.vo.MerchantVo;
 
 
 public interface UserService {
@@ -12,4 +13,10 @@ public interface UserService {
      */
 
     public User findUserByUserName(String userName);
+
+    ResponseResult findUserPage(User user, Integer pageNum, Integer pageSize);
+
+    boolean checkUserNameUnique(String userName);
+
+    ResponseResult addUser(User user);
 }

@@ -18,7 +18,9 @@ public enum AppHttpCodeEnum {
     USER_DUPLICATION(513,"用户存在多个"),
     LOGIN_ERROR(505,"用户名或密码错误"),
     MERCHANT_ORDER_OK(506,"商户提现订单提交成功"),
-    MERCHANT_ORDER_NO(506,"商户提现订单提交失败");
+    MERCHANT_ORDER_NO(506,"商户提现订单提交失败"),
+    MERCHANT_REMOVE_NO(507,"对商户进行修改失败");
+
     int code;
     String msg;
 
