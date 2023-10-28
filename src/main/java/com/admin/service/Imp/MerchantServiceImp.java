@@ -80,7 +80,7 @@ public class MerchantServiceImp implements MerchantService {
         merchantBean.setId(idManager.getMaxMerchantId().incrementAndGet());
         if (mongoTemplate.insert(merchantBean) != null) {
 
-            Mono<String> stringMono = Notification.notificationMerchant(new MerchantDto(MerchantTypeEnum.LIST.getType()));
+            String result = Notification.notificationMerchant(new MerchantDto(MerchantTypeEnum.LIST.getType()));
             return ResponseResult.okResult();
         } else {
             return ResponseResult.errorResult(500, "添加商户失败");
