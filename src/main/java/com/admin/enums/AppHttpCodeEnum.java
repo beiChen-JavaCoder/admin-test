@@ -19,7 +19,9 @@ public enum AppHttpCodeEnum {
     LOGIN_ERROR(505,"用户名或密码错误"),
     MERCHANT_ORDER_OK(506,"商户提现订单提交成功"),
     MERCHANT_ORDER_NO(506,"商户提现订单提交失败"),
-    MERCHANT_REMOVE_NO(507,"对商户进行修改失败");
+    MERCHANT_REMOVE_NO(507,"对商户进行修改失败"),
+    NOTIFICATION_NO(508,"变更列表通知失败"),
+    RECHARGE_NO(509,"充值对象不存在");
 
     int code;
     String msg;

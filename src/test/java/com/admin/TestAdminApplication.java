@@ -137,11 +137,24 @@ public class TestAdminApplication {
     }
     @Test
     void removeMerchantById(){
-        ArrayList<String> strings = new ArrayList<>(1);
-        ResponseResult<PageVo> pageVoResponseResult = merchantService.removeMerchantById(strings);
-        log.info(pageVoResponseResult.toString());
+        ArrayList<Long> ids = new ArrayList<>();
+        ids.add(7L);
+        ids.add(8L);
+        ids.add(9L);
+        ids.add(10L);
+//        ResponseResult<PageVo> pageVoResponseResult = merchantService.removeMerchantById(strings);
+        Query query = new Query(Criteria.where("_id").in(ids));
+        String remove = mongoTemplate.remove(query, MerchantBean.class).toString();
+        log.info(remove);
 
-
+    }
+    @Test
+    void insert(){
+        Menu menu = new Menu();
+        menu.setId("2035");
+        menu.setMenuName("充值管理");
+        menu.setParentId("2017");
+        mongoTemplate.insert(menu);
     }
 
 

@@ -27,7 +27,7 @@ public class MerchantController {
 
     @GetMapping("/merchantList")
     @ApiOperation(value = "商户列表")
-    public ResponseResult<PageVo> getMerchantList(MerchantVo merchantVo, Integer pageNum, Integer pageSize, String username) {
+    public ResponseResult<PageVo> getMerchantList(MerchantVo merchantVo, Integer pageNum, Integer pageSize) {
 
 
         return merchantService.findMerchantPage(merchantVo, pageNum, pageSize);
@@ -35,7 +35,7 @@ public class MerchantController {
 
     @DeleteMapping("/{merchantIds}")
     @ApiOperation(value = "删除商户")
-    public ResponseResult delMerchant(@PathVariable List<String> merchantIds) {
+    public ResponseResult delMerchant(@PathVariable List<Long> merchantIds) {
         if (merchantIds.contains(SecurityUtils.getUserId())) {
             return ResponseResult.errorResult(500, "不能删除当前你正在使用的用户");
         }

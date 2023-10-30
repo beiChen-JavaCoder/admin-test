@@ -1,42 +1,21 @@
 package com.admin.domain.entity;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
-
+/**
+ * 商户http请求(商户列表变更请求地址:/hall/merchant/merchantListChange,充值请求地址:/hall/merchant/recharge,提现请求地址:/hall/merchant/cash)
+ */
 @Data
-@Document(collection = "tb_merchant")
-@EqualsAndHashCode(callSuper = false)
 public class MerchantBean {
-    @Id
     Long id;
-    /**
-     * 商户名称
-     */
-    @Field("name")
-    String name;
-    /**
-     * QQ号
-     */
-    @Field(name = "qq")
-    long qq;
-    /**
-     * 微信账号
-     */
-    @Field(name = "wx")
-    String wx;
-    /**
-     * 歪歪账号
-     */
-    @Field(name = "yy")
-    String yy;
-    /**
-     * 提现比例(游戏币比例)
-     */
-    @Field(name = "ratio")
-    int ratio;
+    /** 操作类型:1.商户列表变更,2.充值,3.提现 */
+    int type;
+    /** 提现订单编号(仅提现时使用) */
+    long oderId;
+    /** 商户编号 */
+    int merchantId;
+    /** 玩家编号 */
+    long userId;
+    /** 变更金额 */
+    long changeNum;
 }

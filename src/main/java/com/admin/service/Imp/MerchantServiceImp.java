@@ -10,6 +10,7 @@ import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.PageVo;
 import com.admin.enums.AppHttpCodeEnum;
 import com.admin.enums.MerchantTypeEnum;
+import com.admin.exception.SystemException;
 import com.admin.notification.Notification;
 import com.admin.service.MerchantIdManager;
 import com.admin.service.MerchantService;
@@ -21,6 +22,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
@@ -62,7 +64,7 @@ public class MerchantServiceImp implements MerchantService {
         List<MerchantBean> Merchants = mongoTemplate.find(query, MerchantBean.class);
 
         // 统计总数
-        long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), User.class);
+        long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), MerchantBean.class);
         //封装返回结果
         PageVo pageVo = new PageVo();
         pageVo.setTotal(total);
@@ -80,7 +82,7 @@ public class MerchantServiceImp implements MerchantService {
         merchantBean.setId(idManager.getMaxMerchantId().incrementAndGet());
         if (mongoTemplate.insert(merchantBean) != null) {
 
-            String result = Notification.notificationMerchant(new MerchantDto(MerchantTypeEnum.LIST.getType()));
+//            String result = Notification.notificationMerchant(new MerchantDto(MerchantTypeEnum.LIST.getType()));
             return ResponseResult.okResult();
         } else {
             return ResponseResult.errorResult(500, "添加商户失败");
@@ -113,11 +115,15 @@ public class MerchantServiceImp implements MerchantService {
     }
 
     @Override
-    public ResponseResult removeMerchantById(List<String> ids) {
+    public ResponseResult removeMerchantById(List<Long> ids) {
 
         Query query = new Query(Criteria.where("_id").in(ids));
         if (mongoTemplate.remove(query, MerchantBean.class).getDeletedCount() > 1) {
-            Notification.notificationMerchant(new MerchantDto(1));
+            try {
+//                Assert.isTrue("0".equals(Notification.notificationMerchant(new MerchantDto(1))));
+            } catch (Exception e) {
+                throw new SystemException(AppHttpCodeEnum.NOTIFICATION_NO);
+            }
             return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
         } else {
             return ResponseResult.errorResult(AppHttpCodeEnum.MERCHANT_REMOVE_NO);

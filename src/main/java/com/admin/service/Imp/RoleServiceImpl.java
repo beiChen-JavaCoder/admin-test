@@ -1,11 +1,14 @@
 package com.admin.service.Imp;
 
 import com.admin.constants.SystemConstants;
+import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.Role;
+import com.admin.domain.vo.PageVo;
 import com.admin.service.RoleMenuService;
 import com.admin.service.RoleService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -44,6 +47,37 @@ public class RoleServiceImpl implements RoleService {
     public List<Role> findRoleAll() {
         Query query = Query.query(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
         return mongoTemplate.find(query, Role.class);
+    }
+
+    @Override
+    public ResponseResult findRolePage(Role role, Integer pageNum, Integer pageSize) {
+
+        Query query = new Query();
+
+        if (StringUtils.hasText(role.getRoleName())) {
+            //添加模糊查询条件
+            query.addCriteria(Criteria.where("roleName").regex(role.getRoleName()));
+        }
+
+        if (StringUtils.hasText(role.getStatus())) {
+            //添加等于查询条件
+            query.addCriteria(Criteria.where("status").is(role.getStatus()));
+        }
+        //添加排序查询条件以roleSort升序查询
+        query.with(Sort.by(Sort.Order.asc("roleSort")));
+        //执行分页查询
+        long total = mongoTemplate.count(query, Role.class);
+
+        query.skip((pageNum - 1) * pageSize).limit(pageSize);
+
+        List<Role> roles = mongoTemplate.find(query, Role.class);
+        //封装PageVo对象
+        PageVo pageVo = new PageVo();
+        pageVo.setTotal(total);
+        pageVo.setRows(roles);
+
+        return ResponseResult.okResult(pageVo);
+
     }
 
 

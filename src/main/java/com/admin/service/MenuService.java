@@ -23,4 +23,7 @@ public interface MenuService {
     public List<Menu> selectRouterMenuTreeByUserId(String userId);
 
 
+    List<Menu> findMenuList(Menu menu);
+
+    void insertMenu(Menu menu);
 }

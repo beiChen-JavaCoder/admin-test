@@ -24,7 +24,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Document("sys_user")
-@ApiModel("用户信息实体类")
+@ApiModel("后台用户信息实体类")
 public class User implements Serializable {
     @MongoId
     private String id;

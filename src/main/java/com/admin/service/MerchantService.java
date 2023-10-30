@@ -20,5 +20,5 @@ public interface MerchantService {
 
     ResponseResult insertMerchant(MerchantVo merchantVo);
 
-    ResponseResult<PageVo> removeMerchantById(List<String> id);
+    ResponseResult<PageVo> removeMerchantById(List<Long> ids);
 }

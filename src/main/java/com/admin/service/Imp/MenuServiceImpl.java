@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
  * @since 2022-08-09 22:32:10
  */
 @Service("menuService")
-public class MenuServiceImpl  implements MenuService {
+public class MenuServiceImpl implements MenuService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -35,19 +36,19 @@ public class MenuServiceImpl  implements MenuService {
     public List<String> selectPermsByUserId(String id) {
 
 
-            Query query = new Query();
-            query.addCriteria(Criteria.where("menu_type").in(SystemConstants.MENU, SystemConstants.BUTTON));
-            query.addCriteria(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
-            List<Menu> menus = mongoTemplate.find(query, Menu.class);
-            List<String> perms = menus.stream()
-                    .map(Menu::getPerms)
-                    .collect(Collectors.toList());
+        Query query = new Query();
+        query.addCriteria(Criteria.where("menu_type").in(SystemConstants.MENU, SystemConstants.BUTTON));
+        query.addCriteria(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
+        List<Menu> menus = mongoTemplate.find(query, Menu.class);
+        List<String> perms = menus.stream()
+                .map(Menu::getPerms)
+                .collect(Collectors.toList());
 
-            return perms;
-        }
-        //否则返回所具有的权限
+        return perms;
+    }
+    //否则返回所具有的权限
 
-//    public List<String> findPermsByUserId(String Id){
+    //    public List<String> findPermsByUserId(String Id){
 //        MatchOperation match = match(Criteria.where("ur.user_id").is(userId)
 //                .and("m.menu_type").in("C", "F")
 //                .and("m.status").is(0)
@@ -79,11 +80,40 @@ public class MenuServiceImpl  implements MenuService {
 
         //构建tree
         //先找出第一层的菜单  然后去找他们的子菜单设置到children属性中
-        List<Menu> menuTree = builderMenuTree(menus,"0");
+        List<Menu> menuTree = builderMenuTree(menus, "0");
         return menuTree;
     }
 
-//    @Override
+    @Override
+    public List<Menu> findMenuList(Menu menu) {
+        Query query = new Query();
+
+        if (StringUtils.hasText(menu.getMenuName())) {
+            //添加模糊查询条件
+            query.addCriteria(Criteria.where("menu_name").regex(menu.getMenuName()));
+        }
+
+        if (StringUtils.hasText(menu.getStatus())) {
+            //添加等于查询条件
+            query.addCriteria(Criteria.where("status").is(menu.getStatus()));
+        }
+        //添加排序条件 根据 parentId 和 orderNum 进行升序排序
+        query.with(Sort.by(Sort.Order.asc("parent_id"), Sort.Order.asc("order_num")));
+        //执行查询
+        String string = mongoTemplate.find(query, Menu.class).toString();
+        List<Menu> menus = mongoTemplate.find(query, Menu.class);
+        return menus;
+
+
+    }
+
+    @Override
+    public void insertMenu(Menu menu) {
+
+        mongoTemplate.insert(menu);
+    }
+
+    //    @Override
 //    public List<Menu> selectMenuList(Menu menu) {
 //
 //        LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
@@ -129,23 +159,24 @@ public class MenuServiceImpl  implements MenuService {
 //                .collect(Collectors.toList());
 //        return childrenList;
 //    }
-private List<Menu> selectAllRouterMenu() {
-    Aggregation aggregation = Aggregation.newAggregation(
-            Aggregation.match(
-                    Criteria.where("menu_type").in("C", "M")
-                            .and("status").is("0")
-                            .and("del_flag").is("0")
-            ),
-            Aggregation.project("id", "parent_id", "menu_name", "path", "component", "visible", "status", "is_frame", "menu_type", "icon", "order_num", "create_time")
-                    .and(ConditionalOperators.Cond.when(Criteria.where("perms").is(null))
-                            .then("")
-                            .otherwiseValueOf("perms"))
-                            .as("perms"));
-            Aggregation.sort(Sort.by(Sort.Direction.ASC, "parent_id", "order_num"));
+    private List<Menu> selectAllRouterMenu() {
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(
+                        Criteria.where("menu_type").in("C", "M")
+                                .and("status").is("0")
+                                .and("del_flag").is("0")
+                ),
+                Aggregation.project("id", "parent_id", "menu_name", "path", "component", "visible", "status", "is_frame", "menu_type", "icon", "order_num", "create_time")
+                        .and(ConditionalOperators.Cond.when(Criteria.where("perms").is(null))
+                                .then("")
+                                .otherwiseValueOf("perms"))
+                        .as("perms"));
+        Aggregation.sort(Sort.by(Sort.Direction.ASC, "parent_id", "order_num"));
 
-    AggregationResults<Menu> results = mongoTemplate.aggregate(aggregation, "sys_menu", Menu.class);
-    return results.getMappedResults();
-}
+        AggregationResults<Menu> results = mongoTemplate.aggregate(aggregation, "sys_menu", Menu.class);
+        return results.getMappedResults();
+    }
+
     private List<Menu> builderMenuTree(List<Menu> menus, String parentId) {
         List<Menu> menuTree = menus.stream()
                 .filter(menu -> menu.getParentId().equals(parentId))
@@ -153,8 +184,10 @@ private List<Menu> selectAllRouterMenu() {
                 .collect(Collectors.toList());
         return menuTree;
     }
+
     /**
      * 获取存入参数的 子Menu集合
+     *
      * @param menu
      * @param menus
      * @return
@@ -162,7 +195,7 @@ private List<Menu> selectAllRouterMenu() {
     private List<Menu> getChildren(Menu menu, List<Menu> menus) {
         List<Menu> childrenList = menus.stream()
                 .filter(m -> m.getParentId().equals(menu.getId()))
-                .map(m->m.setChildren(getChildren(m,menus)))
+                .map(m -> m.setChildren(getChildren(m, menus)))
                 .collect(Collectors.toList());
         return childrenList;
     }
