@@ -1,5 +1,7 @@
 package com.admin.service.Imp;
 
+import cn.hutool.core.date.DateUtil;
+import com.admin.component.IdManager;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.dto.MerchantDto;
 import com.admin.domain.entity.MerchantBean;
@@ -13,23 +15,30 @@ import com.admin.notification.Notification;
 import com.admin.service.UserRoleService;
 import com.admin.service.UserService;
 import com.admin.utils.BeanCopyUtils;
+import com.admin.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
+
 @Service
+@Slf4j
 public class UserServiceImp implements UserService {
     @Resource
     private MongoTemplate mongoTemplate;
@@ -39,6 +48,9 @@ public class UserServiceImp implements UserService {
 
     @Autowired
     private UserRoleService userRoleService;
+
+    @Autowired
+    private IdManager idManager;
 
     public User findUserByUserName(String userName) {
 
@@ -90,32 +102,85 @@ public class UserServiceImp implements UserService {
     public boolean checkUserNameUnique(String userName) {
 
         Query query = new Query(Criteria.where("user_name").is(userName));
-        return mongoTemplate.count(query, User.class)==0;
+        return mongoTemplate.count(query, User.class) == 0;
     }
 
     @Override
     public ResponseResult addUser(User user) {
-        for (String roleId : user.getRoleIds()) {
-            if (roleId.equals(UserTypeEnum.admin.getCode())) {
-                user.setType(UserTypeEnum.admin.getCode());
-                break;
+        //判断新增用户的类型
+        for (Long type : user.getRoleIds()) {
+
+            if (UserTypeEnum.admin.getCode().equals(type + "")) {
+                user.setType(type + "");
             }
+            user.setType(UserTypeEnum.common.getCode());
+
         }
+        //创建人（更新人）
+        Long loginUserId = SecurityUtils.getUserId();
+        user.setCreateBy(loginUserId);
+        user.setUpdateBy(loginUserId);
+        //密码加密处理
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        //新增创建(更新)时间
         user.setCreateTime(new Date());
-
+        user.setUpdateTime(new Date());
+        user.setDelFlag(0);
+        //自增id
+        user.setId(idManager.getMaxUserId().incrementAndGet());
         mongoTemplate.save(user);
-
-        if(user.getRoleIds()!=null&&user.getRoleIds().length>0){
+        //添加角色关联
+        if (user.getRoleIds() != null && user.getRoleIds().length > 0) {
             insertUserRole(user);
         }
 
         return ResponseResult.okResult();
     }
+
+    @Override
+    public User findUserById(Long userId) {
+        Query query = Query.query(Criteria.where("id").is(userId));
+
+        return mongoTemplate.findOne(query, User.class);
+    }
+
+    @Override
+    public void removeByIds(List<Long> userIds) {
+        Query query = Query.query(Criteria.where("_id").in(userIds));
+        mongoTemplate.remove(query, User.class);
+    }
+
+    @Transactional
+    @Override
+    public void updateUser(User user) {
+        // 删除用户与角色关联
+        delUserRole(user);
+        //新增用户与角色关联
+        insertUserRole(user);
+
+        Query updateQuery = new Query(Criteria.where("_id").is(user.getId()));
+        Update update = new Update();
+        // 如果nick_name不为空，则添加更新操作
+        if (user.getNickName() != null) {
+            update.set("nick_name", user.getNickName());
+        }
+        if (user.getPassword() != null) {
+            // 如果password不为空，则添加加密更新操作
+            update.set("password",passwordEncoder.encode(user.getPassword()));
+        }
+        update.set("updateTime", new Date());
+        mongoTemplate.updateFirst(updateQuery, update, User.class);
+    }
+
     private void insertUserRole(User user) {
         List<UserRole> sysUserRoles = Arrays.stream(user.getRoleIds())
                 .map(roleId -> new UserRole(user.getId(), roleId)).collect(Collectors.toList());
-        mongoTemplate.insert(sysUserRoles,UserRole.class);
+        mongoTemplate.insert(sysUserRoles, UserRole.class);
+    }
+
+    private void delUserRole(User user) {
+        Query query = Query.query(Criteria.where("user_id").is(user.getId()));
+        mongoTemplate.remove(query, UserRole.class);
     }
 
 

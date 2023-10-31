@@ -1,6 +1,8 @@
 package com.admin;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.unit.DataUnit;
+import com.admin.component.IdManager;
 import com.admin.constants.SystemConstants;
 import com.admin.dao.UserRepository;
 import com.admin.domain.ResponseResult;
@@ -8,12 +10,16 @@ import com.admin.domain.entity.Menu;
 import com.admin.domain.entity.MerchantBean;
 import com.admin.domain.dto.MerchantDto;
 import com.admin.domain.entity.User;
+import com.admin.domain.entity.UserRole;
 import com.admin.domain.vo.PageVo;
 import com.admin.service.MerchantService;
 import com.admin.service.UserService;
+import com.admin.utils.AtomicIdGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.bcel.BcelAccessForInlineMunger;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,11 +28,14 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Resource;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +43,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 @SpringBootTest(classes = AdminTest.class)
+@EnableTransactionManagement
 @Slf4j
 public class TestAdminApplication {
 
@@ -45,9 +55,11 @@ public class TestAdminApplication {
     MerchantService merchantService;
     @Autowired
     UserService userService;
+    @Resource
+    BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Test
-    void insertTest1(){
+    void insertTest1() {
         User user = new User();
         user.setUserName("test1");
         user.setNickName("test1");
@@ -66,29 +78,32 @@ public class TestAdminApplication {
         System.out.println(user);
         userRepository.insert(user);
     }
+
     @Test
-    void selectPermsByUserId(){
+    void selectPermsByUserId() {
         Query query = new Query();
         query.addCriteria(Criteria.where("status").is(Integer.valueOf(SystemConstants.STATUS_NORMAL)));
         query.addCriteria(Criteria.where("menu_type").in(SystemConstants.MENU, SystemConstants.BUTTON));
         List<Menu> menus = mongoTemplate.find(query, Menu.class);
         log.info(menus.toString());
     }
+
     @Test
-    void InsertMerchant(){
-        for (Integer i = 0; i<10; i++) {
+    void InsertMerchant() {
+        for (Integer i = 0; i < 10; i++) {
             MerchantBean merchantEntity = new MerchantBean();
             merchantEntity.setId(ThreadLocalRandom.current().nextLong());
-            merchantEntity.setName("商家"+i);
-            merchantEntity.setQq(11111+i);
-            merchantEntity.setWx("11111"+i);
-            merchantEntity.setYy("11111"+i);
-            merchantEntity.setRatio(1000+i);
+//            merchantEntity.setName("商家"+i);
+//            merchantEntity.setQq(11111+i);
+//            merchantEntity.setWx("11111"+i);
+//            merchantEntity.setYy("11111"+i);
+//            merchantEntity.setRatio(1000+i);
             mongoTemplate.insert(merchantEntity);
         }
 
 
     }
+
     @Test
     void test1() throws JsonProcessingException {
 
@@ -110,33 +125,36 @@ public class TestAdminApplication {
                 .retrieve()
                 .bodyToMono(String.class);
 
-        log.info(result+"1111111111111111111111111111111111111111111111111");
+        log.info(result + "1111111111111111111111111111111111111111111111111");
     }
+
     @Test
-    void test2(){
-                    Query query = new Query();
+    void test2() {
+        Query query = new Query();
         query.addCriteria(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
 //        query.addCriteria(Criteria.where("menu_type").in(SystemConstants.MENU, SystemConstants.BUTTON));
-            List<Menu> menus = mongoTemplate.find(query, Menu.class);
-            List<String> perms = menus.stream()
-                    .map(Menu::getPerms)
-                    .collect(Collectors.toList());
-            log.info(perms.toString()+"1111111111111111111111111111111111");
-            log.info(menus.toString()+"1111111111111111111111111111111111");
+        List<Menu> menus = mongoTemplate.find(query, Menu.class);
+        List<String> perms = menus.stream()
+                .map(Menu::getPerms)
+                .collect(Collectors.toList());
+        log.info(perms.toString() + "1111111111111111111111111111111111");
+        log.info(menus.toString() + "1111111111111111111111111111111111");
     }
+
     @Test
     void findUserPage() {
         User user = mongoTemplate
                 .findOne(Query.query(Criteria
                         .where("user_name")
-                        .is("test1")),User.class);
+                        .is("test1")), User.class);
         ResponseResult userPage = userService.findUserPage(user, 1, 5);
         log.info(userPage.getData().toString());
 
 
     }
+
     @Test
-    void removeMerchantById(){
+    void removeMerchantById() {
         ArrayList<Long> ids = new ArrayList<>();
         ids.add(7L);
         ids.add(8L);
@@ -148,15 +166,39 @@ public class TestAdminApplication {
         log.info(remove);
 
     }
+
     @Test
-    void insert(){
-        Menu menu = new Menu();
-        menu.setId("2035");
-        menu.setMenuName("充值管理");
-        menu.setParentId("2017");
-        mongoTemplate.insert(menu);
+    public void insertDocument() {
+        User user = new User();
+        user.setId(AtomicIdGenerator.generateId());
+        user.setType("1");
+        user.setCreateTime(DateUtil.date());
+        user.setUserName("test1");
+        String test1 = bCryptPasswordEncoder.encode("test1");
+        user.setPassword(test1);
+        user.setStatus("0");
+        user.setNickName("test1");
+        user.setDelFlag(0);
+        user.setUpdateTime(DateUtil.date());
+        mongoTemplate.save(user);
     }
+private IdManager idManager;
+    @Test
+    @Transactional
+    void testTransactional() {
 
-
+        User user = new User();
+        user.setId(100L);
+        mongoTemplate.insert(user);
+        try {
+            log.info("用户添加完成，等待执行。。。");
+            // 暂停当前线程执行500毫秒（0.5秒）
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            // 处理线程中断异常
+            e.printStackTrace();
+        }
+        mongoTemplate.insert(new UserRole());
+    }
 
 }

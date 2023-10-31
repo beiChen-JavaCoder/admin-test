@@ -10,6 +10,7 @@ import com.admin.domain.vo.RoleInfoVo;
 import com.admin.enums.MerchantTypeEnum;
 import com.admin.notification.Notification;
 import com.admin.service.RoleInfoService;
+import com.admin.utils.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +39,13 @@ public class RechargeController {
         return roleInfoService.findRolePage(roleInfoVo, pageNum, pageSize);
     }
 
-    @PostMapping("/updategold")
+    @PostMapping("/updateGold")
     @ApiOperation("充值角色金币")
     public ResponseResult updateGold(@RequestBody RechargeVo rechargeVo) {
+
+
+        Long userId = SecurityUtils.getUserId();
+        rechargeVo.setMerchantId(Long.valueOf(userId));
 
         return roleInfoService.updateRoleGold(rechargeVo);
 

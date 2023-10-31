@@ -13,7 +13,7 @@ public class MerchantDto {
     /** 提现订单编号(仅提现时使用) */
     long oderId;
     /** 商户编号 */
-    int merchantId;
+    Long merchantId;
     /** 玩家编号 */
     long userId;
     /** 变更金额 */

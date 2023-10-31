@@ -43,16 +43,6 @@ public class MerchantController {
         return ResponseResult.okResult();
     }
 
-    //    @PostMapping("/insertMerchant")
-//    @ApiOperation("新增订单")
-//    public ResponseResult<PageVo> insertMerchant(MerchantVo merchantVo) {
-//        PageVo pageVo = merchantService.insertMerchant(merchantVo);
-//        if (!pageVo.getRows().isEmpty()) {
-//            return ResponseResult.okResult(pageVo);
-//        } else {
-//            return ResponseResult.errorResult(AppHttpCodeEnum.MERCHANT_ORDER_NO);
-//        }
-//    }
     @PostMapping()
     @ApiOperation("新增商户")
     public ResponseResult insertMerchant(@RequestBody MerchantVo merchantVo) {

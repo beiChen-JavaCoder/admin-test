@@ -16,7 +16,7 @@ import java.util.List;
  */
 public interface RoleService {
 
-    List<String> selectRoleKeyByUserId(String id);
+    List<String> selectRoleKeyByUserId(Long id);
 
     List<Role> findRoleAll();
 

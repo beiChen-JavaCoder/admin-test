@@ -4,6 +4,8 @@ import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.User;
 import com.admin.domain.vo.MerchantVo;
 
+import java.util.List;
+
 
 public interface UserService {
 
@@ -19,4 +21,10 @@ public interface UserService {
     boolean checkUserNameUnique(String userName);
 
     ResponseResult addUser(User user);
+
+    User findUserById(Long userId);
+
+    void removeByIds(List<Long> userIds);
+
+    void updateUser(User user);
 }

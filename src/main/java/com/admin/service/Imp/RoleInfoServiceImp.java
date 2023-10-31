@@ -1,16 +1,17 @@
 package com.admin.service.Imp;
 
+import com.admin.constants.SystemConstants;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.dto.MerchantDto;
+import com.admin.domain.entity.Role;
 import com.admin.domain.entity.RoleInfoEntity;
+import com.admin.domain.entity.UserRole;
 import com.admin.domain.vo.PageVo;
 import com.admin.domain.vo.RechargeVo;
 import com.admin.domain.vo.RoleInfoVo;
 import com.admin.enums.AppHttpCodeEnum;
 import com.admin.enums.MerchantTypeEnum;
 import com.admin.exception.SystemException;
-import com.admin.notification.Notification;
-import com.admin.service.MerchantIdManager;
 import com.admin.service.RoleInfoService;
 import com.mongodb.client.result.UpdateResult;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Xqf
@@ -37,8 +39,6 @@ import java.util.List;
 @Service
 public class RoleInfoServiceImp implements RoleInfoService {
 
-    @Autowired
-    private MerchantIdManager idManager;
     @Autowired
     private MongoTemplate mongoTemplate;
 
@@ -92,19 +92,35 @@ public class RoleInfoServiceImp implements RoleInfoService {
         if (updateResult.wasAcknowledged() && updateResult.getModifiedCount() == 1L) {
             //更新金币成功后组装通知参数
             MerchantDto merchantDto = new MerchantDto();
-            //todo 需要获取商户id（现为模拟数据）
-            merchantDto.setMerchantId(5);
+            merchantDto.setMerchantId(rechargeVo.getMerchantId());
             merchantDto.setType(MerchantTypeEnum.CHARGE.getType());
             merchantDto.setUserId(roleInfo.getRid());
             merchantDto.setChangeNum(rechargeVo.getNum());
-            log.info(Notification.notificationMerchant(merchantDto));
 
             return ResponseResult.okResult(200, "充值成功");
 
         } else {
-            
+
             return ResponseResult.errorResult(500, "充值失败");
 
         }
+    }
+
+    @Override
+    public List<Role> findRoleAll() {
+
+        Query query = Query.query(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
+
+        return mongoTemplate.find(query, Role.class);
+    }
+
+    @Override
+    public List<Long> findRoleIdByUserId(Long userId) {
+
+        Query query = new Query(Criteria.where("user_id").is(userId));
+        List<UserRole> userRoles = mongoTemplate.find(query, UserRole.class, "sys_user_role");
+        List<Long> roleIds = userRoles.stream().map(UserRole::getRoleId).collect(Collectors.toList());
+
+        return roleIds;
     }
 }

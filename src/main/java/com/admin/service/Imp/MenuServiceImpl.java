@@ -33,9 +33,9 @@ public class MenuServiceImpl implements MenuService {
 
 
     @Override
-    public List<String> selectPermsByUserId(String id) {
+    public List<String> selectPermsByUserId(Long id) {
 
-
+        //管理员权限
         Query query = new Query();
         query.addCriteria(Criteria.where("menu_type").in(SystemConstants.MENU, SystemConstants.BUTTON));
         query.addCriteria(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
@@ -74,7 +74,7 @@ public class MenuServiceImpl implements MenuService {
 //    }
 //
     @Override
-    public List<Menu> selectRouterMenuTreeByUserId(String userId) {
+    public List<Menu> selectRouterMenuTreeByUserId(Long userId) {
 
         List<Menu> menus = selectAllRouterMenu();
 

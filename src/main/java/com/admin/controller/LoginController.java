@@ -40,8 +40,6 @@ public class LoginController {
     @PostMapping("/user/login")
     public ResponseResult login(@RequestBody User user) {
         if (!StringUtils.hasText(user.getUserName())) {
-
-            
             //提示 必须要传用户名
             throw new SystemException(AppHttpCodeEnum.REQUIRE_USERNAME);
         }
@@ -74,7 +72,7 @@ public class LoginController {
     }
     @GetMapping("getRouters")
     public ResponseResult<RoutersVo> getRouters(){
-        String userId = SecurityUtils.getUserId();
+        Long userId = SecurityUtils.getUserId();
         //查询menu 结果是tree的形式
         List<Menu> menus = menuService.selectRouterMenuTreeByUserId(userId);
         //封装数据返回

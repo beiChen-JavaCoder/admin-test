@@ -1,30 +1,25 @@
 package com.admin.service.Imp;
 
-import cn.hutool.core.date.DateUtil;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.MerchantBean;
-import com.admin.domain.entity.MerchantOrderEntity;
-import com.admin.domain.dto.MerchantDto;
-import com.admin.domain.entity.User;
+import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.PageVo;
 import com.admin.enums.AppHttpCodeEnum;
-import com.admin.enums.MerchantTypeEnum;
 import com.admin.exception.SystemException;
-import com.admin.notification.Notification;
-import com.admin.service.MerchantIdManager;
+import com.admin.component.IdManager;
 import com.admin.service.MerchantService;
 import com.admin.utils.BeanCopyUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +35,7 @@ public class MerchantServiceImp implements MerchantService {
     @Autowired
     private MongoTemplate mongoTemplate;
     @Autowired
-    MerchantIdManager idManager;
+    private IdManager merchantIdManager;
 
     @Override
     public ResponseResult<PageVo> findMerchantPage(MerchantVo merchantVo, Integer pageNum, Integer pageSize) {
@@ -61,10 +56,10 @@ public class MerchantServiceImp implements MerchantService {
         // 创建查询对象
         Query query = Query.query(criteria).with(pageable);
 
-        List<MerchantBean> Merchants = mongoTemplate.find(query, MerchantBean.class);
+        List<MerchantEntity> Merchants = mongoTemplate.find(query, MerchantEntity.class);
 
         // 统计总数
-        long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), MerchantBean.class);
+        long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), MerchantEntity.class);
         //封装返回结果
         PageVo pageVo = new PageVo();
         pageVo.setTotal(total);
@@ -75,11 +70,9 @@ public class MerchantServiceImp implements MerchantService {
     @Override
     public ResponseResult insertMerchant(MerchantVo merchantVo) {
 
-        MerchantBean merchantBean = BeanCopyUtils.copyBean(merchantVo, MerchantBean.class);
-//        List<String> orders=new ArrayList<>();
-//        orders.add("id");
-//        Sort sort=Sort.by(Sort.Direction.DESC,"id");
-        merchantBean.setId(idManager.getMaxMerchantId().incrementAndGet());
+        MerchantEntity merchantBean = BeanCopyUtils.copyBean(merchantVo, MerchantEntity.class);
+
+        merchantBean.setId(merchantIdManager.getMaxMerchantId().incrementAndGet());
         if (mongoTemplate.insert(merchantBean) != null) {
 
 //            String result = Notification.notificationMerchant(new MerchantDto(MerchantTypeEnum.LIST.getType()));

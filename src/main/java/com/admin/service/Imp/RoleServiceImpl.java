@@ -35,7 +35,7 @@ public class RoleServiceImpl implements RoleService {
 
 
     @Override
-    public List<String> selectRoleKeyByUserId(String id) {
+    public List<String> selectRoleKeyByUserId(Long id) {
         //判断是否是管理员 如果是返回集合中只需要有admin
 
         List<String> roleKeys = new ArrayList<>();

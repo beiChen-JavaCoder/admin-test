@@ -21,7 +21,7 @@ import java.util.Date;
 @Document("sys_role")
 public class Role {
     //角色ID@TableId
-    private String id;
+    private Long id;
 
     //角色名称
     private String roleName;
