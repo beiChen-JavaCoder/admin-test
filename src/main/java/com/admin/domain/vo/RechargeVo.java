@@ -20,7 +20,6 @@ public class RechargeVo {
     /**
      * 玩家id
      */
-
     private Integer rid;
     /**
      * 用户名称

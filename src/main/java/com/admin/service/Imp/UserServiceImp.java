@@ -5,13 +5,18 @@ import com.admin.component.IdManager;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.dto.MerchantDto;
 import com.admin.domain.entity.MerchantBean;
+import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.entity.User;
 import com.admin.domain.entity.UserRole;
 import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.PageVo;
+import com.admin.domain.vo.UserAndMerchantVo;
+import com.admin.enums.AppHttpCodeEnum;
 import com.admin.enums.MerchantTypeEnum;
 import com.admin.enums.UserTypeEnum;
+import com.admin.exception.SystemException;
 import com.admin.notification.Notification;
+import com.admin.service.MerchantService;
 import com.admin.service.UserRoleService;
 import com.admin.service.UserService;
 import com.admin.utils.BeanCopyUtils;
@@ -51,6 +56,9 @@ public class UserServiceImp implements UserService {
 
     @Autowired
     private IdManager idManager;
+
+    @Autowired
+    private MerchantService merchantService;
 
     public User findUserByUserName(String userName) {
 
@@ -99,21 +107,37 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public boolean checkUserNameUnique(String userName) {
+    public boolean checkUserNameUnique(String userName){
 
         Query query = new Query(Criteria.where("user_name").is(userName));
         return mongoTemplate.count(query, User.class) == 0;
     }
 
     @Override
-    public ResponseResult addUser(User user) {
-        //判断新增用户的类型
-        for (Long type : user.getRoleIds()) {
+    public ResponseResult addUser(UserAndMerchantVo userAndMerchantVo) {
 
-            if (UserTypeEnum.admin.getCode().equals(type + "")) {
-                user.setType(type + "");
+        User user = BeanCopyUtils.copyBean(userAndMerchantVo, User.class);
+        MerchantEntity merchantEntity = BeanCopyUtils.copyBean(userAndMerchantVo, MerchantEntity.class);
+
+        merchantEntity.setId(idManager.getMaxMerchantId().incrementAndGet());
+        try {
+            //新增商户
+            merchantService.addMerchant(merchantEntity);
+        } catch (Exception e) {
+            throw new SystemException(AppHttpCodeEnum.ADD_USER_MERCHANT_NO);
+        }
+        //判断新增用户类型
+        for (Long type: user.getRoleIds()) {
+            if ((type+"").equals(UserTypeEnum.admin.getCode())){
+                user.setType(type+"");
+                user.setType(UserTypeEnum.admin.getCode()+"");
+                break;
+            }else if ((type+"").equals(UserTypeEnum.common.getCode())){
+                user.setType(type+"");
+                user.setType(UserTypeEnum.common.getCode()+"");
+                //给用户绑定商户id
+                user.setMerchantEntId(merchantEntity.getId());
             }
-            user.setType(UserTypeEnum.common.getCode());
 
         }
         //创建人（更新人）
@@ -128,11 +152,21 @@ public class UserServiceImp implements UserService {
         user.setDelFlag(0);
         //自增id
         user.setId(idManager.getMaxUserId().incrementAndGet());
-        mongoTemplate.save(user);
-        //添加角色关联
-        if (user.getRoleIds() != null && user.getRoleIds().length > 0) {
-            insertUserRole(user);
+
+        try {
+            //新增用户
+            mongoTemplate.save(user);
+            //添加角色关联
+            if (user.getRoleIds() != null && user.getRoleIds().length > 0) {
+                insertUserRole(user);
+            }
+
+        } catch (Exception e) {
+            throw new SystemException(AppHttpCodeEnum.ADD_USER_MERCHANT_NO);
         }
+
+        user.setMerchantEntId(merchantEntity.getId());
+
 
         return ResponseResult.okResult();
     }
@@ -146,15 +180,21 @@ public class UserServiceImp implements UserService {
 
     @Override
     public void removeByIds(List<Long> userIds) {
+
         Query query = Query.query(Criteria.where("_id").in(userIds));
+        //删除对应用户
         mongoTemplate.remove(query, User.class);
+
+        //删除对应的用户角色
+        delUserRole(userIds);
     }
 
-    @Transactional
     @Override
     public void updateUser(User user) {
         // 删除用户与角色关联
-        delUserRole(user);
+        ArrayList<Long> userIds = new ArrayList<>();
+        userIds.add(user.getId());
+        delUserRole(userIds);
         //新增用户与角色关联
         insertUserRole(user);
 
@@ -172,14 +212,15 @@ public class UserServiceImp implements UserService {
         mongoTemplate.updateFirst(updateQuery, update, User.class);
     }
 
+
     private void insertUserRole(User user) {
         List<UserRole> sysUserRoles = Arrays.stream(user.getRoleIds())
                 .map(roleId -> new UserRole(user.getId(), roleId)).collect(Collectors.toList());
         mongoTemplate.insert(sysUserRoles, UserRole.class);
     }
 
-    private void delUserRole(User user) {
-        Query query = Query.query(Criteria.where("user_id").is(user.getId()));
+    private void delUserRole(List<Long> userIds) {
+        Query query = Query.query(Criteria.where("user_id").in(userIds));
         mongoTemplate.remove(query, UserRole.class);
     }
 

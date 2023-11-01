@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginUser implements UserDetails, Serializable {
+public class LoginUser implements UserDetails{
 
     private User user;
 

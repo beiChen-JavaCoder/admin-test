@@ -10,13 +10,13 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 /**
  * @author Xqf
  * @version 1.0
+ * 商户充值Vo
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class MerchantVo {
 
-    @Id
     Long id;
     /**
      * 商户名称
@@ -36,19 +36,10 @@ public class MerchantVo {
     /**
      * 歪歪账号
      */
-
     String yy;
     /**
      * 提现比例(游戏币比例)
      */
-
     int ratio;
-    /**
-     * 提现数量
-     */
-    int num;
-    /**
-     * 账户类型
-     */
-    String accountType;
+
 }

@@ -21,7 +21,8 @@ public enum AppHttpCodeEnum {
     MERCHANT_ORDER_NO(506,"商户提现订单提交失败"),
     MERCHANT_REMOVE_NO(507,"对商户进行修改失败"),
     NOTIFICATION_NO(508,"变更列表通知失败"),
-    RECHARGE_NO(509,"充值对象不存在");
+    RECHARGE_NO(509,"充值对象不存在"),
+    ADD_USER_MERCHANT_NO(510,"添加用户商户或绑定商户失败");
 
     int code;
     String msg;

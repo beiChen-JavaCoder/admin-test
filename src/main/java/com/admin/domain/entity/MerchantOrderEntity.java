@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.Column;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -14,7 +15,7 @@ import java.util.Date;
 @Data
 @Document(collection = "tb_merchant_order")
 @EqualsAndHashCode(callSuper = false)
-public class MerchantOrderEntity  {
+public class MerchantOrderEntity implements Serializable {
     @Id
     @javax.persistence.Id
     long id;

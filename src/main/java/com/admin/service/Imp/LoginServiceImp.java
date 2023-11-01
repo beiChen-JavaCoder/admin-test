@@ -12,6 +12,7 @@ import com.admin.utils.BeanCopyUtils;
 import com.admin.utils.JwtUtil;
 import com.admin.utils.RedisCache;
 import com.admin.utils.SecurityUtils;
+import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

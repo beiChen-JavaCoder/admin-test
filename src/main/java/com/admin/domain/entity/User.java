@@ -59,5 +59,8 @@ public class User implements Serializable {
     //关联角色id数组，非user表字段
     @Transient
     private Long[] roleIds;
+    //关联绑定商户
+    @Field("merchantEnt_id")
+    private Long merchantEntId;
 
 }

@@ -23,6 +23,7 @@ public class Role {
     //角色ID@TableId
     private Long id;
 
+    @Field("role_name")
     //角色名称
     private String roleName;
     //角色权限字符串

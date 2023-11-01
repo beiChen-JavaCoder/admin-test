@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.persistence.Column;
 
@@ -17,8 +18,8 @@ public class MerchantEntity {
     /**
      * 商户名称
      */
-    @Column(name = "name")
-    String name;
+    @Field(name = "name")
+    String merchantName;
     /**
      * QQ号
      */

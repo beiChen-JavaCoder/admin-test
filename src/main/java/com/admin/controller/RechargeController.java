@@ -35,7 +35,6 @@ public class RechargeController {
     @ApiOperation(value = "角色列表")
     public ResponseResult<PageVo> getRoleList(RoleInfoVo roleInfoVo, Integer pageNum, Integer pageSize) {
 
-
         return roleInfoService.findRolePage(roleInfoVo, pageNum, pageSize);
     }
 

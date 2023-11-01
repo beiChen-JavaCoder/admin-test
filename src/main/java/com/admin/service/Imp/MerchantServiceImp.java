@@ -3,6 +3,7 @@ package com.admin.service.Imp;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.MerchantBean;
 import com.admin.domain.entity.MerchantEntity;
+import com.admin.domain.entity.User;
 import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.PageVo;
 import com.admin.enums.AppHttpCodeEnum;
@@ -68,12 +69,27 @@ public class MerchantServiceImp implements MerchantService {
     }
 
     @Override
-    public ResponseResult insertMerchant(MerchantVo merchantVo) {
+    public ResponseResult addMerchant(MerchantEntity merchantEntity ) {
 
-        MerchantEntity merchantBean = BeanCopyUtils.copyBean(merchantVo, MerchantEntity.class);
+        //判断商户名不能为空或已存在
+        if (!StringUtils.hasText(merchantEntity.getMerchantName())) {
+            return ResponseResult.errorResult(500, "商户名不能为空");
+        }
+        if (!StringUtils.hasText(merchantEntity.getRatio()+"")) {
+            return ResponseResult.errorResult(500, "提现比例不能为空");
+        }
+        long count = mongoTemplate
+                .count(Query
+                        .query(Criteria
+                                .where("name")
+                                .is(merchantEntity.getMerchantName())), MerchantEntity.class);
+        if (count!=0) {
+            return ResponseResult.errorResult(500, "商户名已被使用");
+        }
 
-        merchantBean.setId(merchantIdManager.getMaxMerchantId().incrementAndGet());
-        if (mongoTemplate.insert(merchantBean) != null) {
+
+        merchantEntity.setId(merchantIdManager.getMaxMerchantId().incrementAndGet());
+        if (mongoTemplate.insert(merchantEntity) != null) {
 
 //            String result = Notification.notificationMerchant(new MerchantDto(MerchantTypeEnum.LIST.getType()));
             return ResponseResult.okResult();
@@ -122,6 +138,16 @@ public class MerchantServiceImp implements MerchantService {
             return ResponseResult.errorResult(AppHttpCodeEnum.MERCHANT_REMOVE_NO);
         }
 
+    }
+
+    @Override
+    public MerchantEntity findMerchantByUserId(Long userId) {
+        Query query = Query.query(Criteria.where("_id").is(userId));
+        Long merchantEntId = mongoTemplate.findOne(query, User.class).getMerchantEntId();
+
+        return mongoTemplate
+                .findOne(Query.query(Criteria
+                        .where("_id").is(merchantEntId)), MerchantEntity.class);
     }
 
 
