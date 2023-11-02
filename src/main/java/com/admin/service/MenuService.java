@@ -25,5 +25,15 @@ public interface MenuService {
 
     List<Menu> findMenuList(Menu menu);
 
-    void insertMenu(Menu menu);
+    void addMenu(Menu menu);
+
+    void updateById(Menu menu);
+
+    Menu findById(Long menuId);
+
+    boolean hasChild(Long menuId);
+
+    void removeById(Long menuId);
+
+    List<Long> findMenuListByRoleId(Long roleId);
 }

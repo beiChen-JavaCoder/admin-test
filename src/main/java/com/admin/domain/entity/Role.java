@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 角色信息表(Role)表实体类
@@ -37,16 +38,16 @@ public class Role {
     @Field("del_flag")
     private String delFlag;
     @Field("create_by")
-    private String createBy;
+    private Long createBy;
     @Field("create_time")
     private Date createTime;
     @Field("update_by")
-    private String updateBy;
+    private Long updateBy;
     @Field("update_time")
     private Date updateTime;
     //备注
     private String remark;
     //关联菜单id数组，不是表中的字段  用来接收参数使用
-    private String menuIds;
+    private Long[] menuIds;
 
 }

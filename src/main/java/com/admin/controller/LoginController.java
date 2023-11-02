@@ -65,7 +65,6 @@ public class LoginController {
         //封装数据返回
 
         AdminUserInfoVo adminUserInfoVo = new AdminUserInfoVo(perms,roleKeyList,userInfoVo);
-        System.out.println(adminUserInfoVo.toString());
         return ResponseResult.okResult(adminUserInfoVo);
 
 
@@ -76,7 +75,6 @@ public class LoginController {
         //查询menu 结果是tree的形式
         List<Menu> menus = menuService.selectRouterMenuTreeByUserId(userId);
         //封装数据返回
-        System.out.println(new RoutersVo(menus));
         return ResponseResult.okResult(new RoutersVo(menus));
     }
 }

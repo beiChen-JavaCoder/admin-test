@@ -18,7 +18,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class MenuVo {
     //菜单ID
-    private String id;
+    private Long id;
 
     //菜单名称
     private String menuName;

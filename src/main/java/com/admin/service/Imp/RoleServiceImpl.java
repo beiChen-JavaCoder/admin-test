@@ -1,19 +1,21 @@
 package com.admin.service.Imp;
 
+import cn.hutool.core.date.DateUtil;
+import com.admin.component.IdManager;
 import com.admin.constants.SystemConstants;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.Role;
+import com.admin.domain.entity.RoleMenu;
 import com.admin.domain.vo.PageVo;
 import com.admin.service.RoleMenuService;
 import com.admin.service.RoleService;
-
+import com.admin.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -27,11 +29,15 @@ import java.util.stream.Collectors;
  * @author makejava
  * @since 2022-08-09 22:36:47
  */
-@Service("roleService")
+@Service
 public class RoleServiceImpl implements RoleService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private RoleMenuService roleMenuService;
+    @Autowired
+    private IdManager idManager;
 
 
     @Override
@@ -78,6 +84,31 @@ public class RoleServiceImpl implements RoleService {
 
         return ResponseResult.okResult(pageVo);
 
+    }
+    @Override
+    public Role findRoleById(Long roleId) {
+        return mongoTemplate.findById(roleId,Role.class);
+    }
+
+    @Override
+    public void addRole(Role role) {
+    role.setId(idManager.getMaxRoleId().incrementAndGet());
+    role.setCreateBy(SecurityUtils.getUserId());
+    role.setCreateTime(DateUtil.date());
+    role.setDelFlag(0+"");
+        mongoTemplate.insert(role);
+        if(role.getMenuIds()!=null&&role.getMenuIds().length>0){
+            addRoleMenu(role);
+        }
+
+
+    }
+
+    private void addRoleMenu(Role role) {
+        List<RoleMenu> roleMenuList = Arrays.stream(role.getMenuIds())
+                .map(memuId -> new RoleMenu(role.getId(), memuId))
+                .collect(Collectors.toList());
+        roleMenuService.addRoleMenuBatch(roleMenuList);
     }
 
 

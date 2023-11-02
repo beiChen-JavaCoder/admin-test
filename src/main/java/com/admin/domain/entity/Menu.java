@@ -26,14 +26,14 @@ import java.util.List;
 @Accessors(chain = true)
 public class Menu  {
     //菜单ID
-    @Field("id")
-    private String id;
+    @Field("_id")
+    private Long id;
     //菜单名称
     @Field("menu_name")
     private String menuName;
     //父菜单ID
     @Field("parent_id")
-    private String parentId;
+    private Long parentId;
     //显示顺序
     @Field("order_num")
     private Integer orderNum;
@@ -58,18 +58,20 @@ public class Menu  {
     private String icon;
     //创建者
     @Field("create_by")
-    private String createBy;
+    private Long createBy;
     //创建时间
+    @Field("create_time")
     private Date createTime;
     //更新者
-    private String updateBy;
+    @Field("update_by")
+    private Long updateBy;
     //更新时间
+    @Field("update_time")
     private Date updateTime;
     //备注
     private String remark;
     @Field("del_flag")
     private String delFlag;
-
 
     private List<Menu> children;
 }

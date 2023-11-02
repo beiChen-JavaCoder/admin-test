@@ -1,9 +1,13 @@
 package com.admin.service.Imp;
 
 
+import cn.hutool.core.date.DateUtil;
+import com.admin.component.IdManager;
 import com.admin.constants.SystemConstants;
 import com.admin.domain.entity.Menu;
 import com.admin.service.MenuService;
+import com.admin.utils.SecurityUtils;
+import com.mongodb.client.result.DeleteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -12,9 +16,11 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +36,8 @@ public class MenuServiceImpl implements MenuService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private IdManager idManager;
 
 
     @Override
@@ -80,7 +88,7 @@ public class MenuServiceImpl implements MenuService {
 
         //构建tree
         //先找出第一层的菜单  然后去找他们的子菜单设置到children属性中
-        List<Menu> menuTree = builderMenuTree(menus, "0");
+        List<Menu> menuTree = builderMenuTree(menus, 0L);
         return menuTree;
     }
 
@@ -108,9 +116,55 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public void insertMenu(Menu menu) {
+    public void addMenu(Menu menu) {
 
+        menu.setId(idManager.getMaxMenuId().incrementAndGet());
+        menu.setCreateTime(DateUtil.date());
+        menu.setCreateBy(SecurityUtils.getUserId());
+        menu.setDelFlag(0 + "");
+        menu.setIsFrame(1);
         mongoTemplate.insert(menu);
+    }
+
+//    @Override
+//    public Menu findById(Long menuId) {
+//        return mongoTemplate.findOne(Query.query(Criteria.where("_id").is(menuId)), Menu.class);
+//    }
+
+    @Override
+    public void updateById(Menu menu) {
+
+        mongoTemplate.save(menu);
+
+
+    }
+
+    @Override
+    public Menu findById(Long menuId) {
+        return mongoTemplate.findById(menuId, Menu.class);
+    }
+
+    @Override
+    public boolean hasChild(Long menuId) {
+        return mongoTemplate.count(Query.query(Criteria.where("parent_id").is(menuId)), Menu.class) != 0;
+    }
+
+    @Override
+    public void removeById(Long menuId) {
+
+        mongoTemplate.remove(Query.query(Criteria.where("_id").is(menuId)), Menu.class);
+    }
+
+    @Override
+    public List<Long> findMenuListByRoleId(Long roleId) {
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where("role_id").is(roleId));
+
+        query.with(Sort.by(Sort.Direction.ASC, "parent_id", "order_num"));
+
+        return mongoTemplate.find(query, Long.class, "sys_menu");
+
     }
 
     //    @Override
@@ -177,7 +231,7 @@ public class MenuServiceImpl implements MenuService {
         return results.getMappedResults();
     }
 
-    private List<Menu> builderMenuTree(List<Menu> menus, String parentId) {
+    private List<Menu> builderMenuTree(List<Menu> menus, Long parentId) {
         List<Menu> menuTree = menus.stream()
                 .filter(menu -> menu.getParentId().equals(parentId))
                 .map(menu -> menu.setChildren(getChildren(menu, menus)))

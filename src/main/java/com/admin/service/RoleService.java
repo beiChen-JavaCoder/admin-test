@@ -22,6 +22,10 @@ public interface RoleService {
 
     ResponseResult findRolePage(Role role, Integer pageNum, Integer pageSize);
 
+    Role findRoleById(Long roleId);
+
+    void addRole(Role role);
+
 //    ResponseResult selectRolePage(Role role, Integer pageNum, Integer pageSize);
 
 //    void insertRole(Role role);
