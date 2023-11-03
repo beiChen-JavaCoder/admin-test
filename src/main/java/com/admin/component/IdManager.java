@@ -55,7 +55,7 @@ public class IdManager {
         Query queryRole = new Query().with(Sort.by(Sort.Direction.DESC, "_id")).limit(1);
         Role role = mongoTemplate.findOne(queryRole, Role.class);
         if (role != null) {
-            maxMenuId.set(role.getId());
+            maxRoleId.set(role.getId());
         }
     }
 }

@@ -14,7 +14,7 @@ import javax.persistence.Column;
 @Data
 @Document(collection = "tb_roleinfo")
 @EqualsAndHashCode(callSuper = false)
-public class RoleInfoEntity {
+public class GameRole {
 
     @Id
     @javax.persistence.Id

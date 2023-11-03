@@ -11,5 +11,6 @@ import java.util.List;
 public interface RoleMenuService {
     void addRoleMenuBatch(List<RoleMenu> roleMenuList);
 
-//    void deleteRoleMenuByRoleId(Long id);
+    void removeRoleMenuByRoleId(Long id);
+
 }

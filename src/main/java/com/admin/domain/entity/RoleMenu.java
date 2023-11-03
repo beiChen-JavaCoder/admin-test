@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 /**
  * @Author xqf
@@ -13,9 +15,17 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @Document("sys_role_menu")
 public class RoleMenu {
-    /** 角色ID */
+    @MongoId
+    private Long id;
+    /**
+     * 角色ID
+     */
+    @Field("role_id")
     private Long roleId;
 
-    /** 菜单ID */
+    /**
+     * 菜单ID
+     */
+    @Field("menu_id")
     private Long menuId;
 }

@@ -4,7 +4,7 @@ import com.admin.constants.SystemConstants;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.dto.MerchantDto;
 import com.admin.domain.entity.Role;
-import com.admin.domain.entity.RoleInfoEntity;
+import com.admin.domain.entity.GameRole;
 import com.admin.domain.entity.UserRole;
 import com.admin.domain.vo.PageVo;
 import com.admin.domain.vo.RechargeVo;
@@ -62,10 +62,10 @@ public class RoleInfoServiceImp implements RoleInfoService {
         // 创建查询对象
         Query query = Query.query(criteria).with(pageable);
 
-        List<RoleInfoEntity> roleInfoEntities = mongoTemplate.find(query, RoleInfoEntity.class);
+        List<GameRole> roleInfoEntities = mongoTemplate.find(query, GameRole.class);
 
         // 统计总数
-        long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), RoleInfoEntity.class);
+        long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), GameRole.class);
         //封装返回结果
         PageVo pageVo = new PageVo();
         pageVo.setTotal(total);
@@ -79,7 +79,7 @@ public class RoleInfoServiceImp implements RoleInfoService {
         Query query = Query.query(Criteria.where("_id").is(rechargeVo.getRid()));
 
 
-        RoleInfoEntity roleInfo = mongoTemplate.findOne(query, RoleInfoEntity.class);
+        GameRole roleInfo = mongoTemplate.findOne(query, GameRole.class);
 
         try {
             //当充值对象不存在时报错
@@ -88,7 +88,7 @@ public class RoleInfoServiceImp implements RoleInfoService {
             throw new SystemException(AppHttpCodeEnum.RECHARGE_NO);
         }
         Update update = new Update().inc("gold", rechargeVo.getNum());
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, RoleInfoEntity.class);
+        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, GameRole.class);
         if (updateResult.wasAcknowledged() && updateResult.getModifiedCount() == 1L) {
             //更新金币成功后组装通知参数
             MerchantDto merchantDto = new MerchantDto();

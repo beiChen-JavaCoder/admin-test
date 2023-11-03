@@ -26,6 +26,10 @@ public interface RoleService {
 
     void addRole(Role role);
 
+    void removeById(Long id);
+
+    void updateRole(Role role);
+
 //    ResponseResult selectRolePage(Role role, Integer pageNum, Integer pageSize);
 
 //    void insertRole(Role role);

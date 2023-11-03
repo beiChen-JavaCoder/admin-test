@@ -1,22 +1,15 @@
 package com.admin.controller;
 
 import com.admin.domain.ResponseResult;
-import com.admin.domain.dto.MerchantDto;
-import com.admin.domain.entity.RoleInfoEntity;
-import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.PageVo;
 import com.admin.domain.vo.RechargeVo;
 import com.admin.domain.vo.RoleInfoVo;
-import com.admin.enums.MerchantTypeEnum;
-import com.admin.notification.Notification;
 import com.admin.service.RoleInfoService;
 import com.admin.utils.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import javax.management.relation.RoleInfo;
 
 /**
  * @author Xqf

@@ -85,28 +85,52 @@ public class RoleServiceImpl implements RoleService {
         return ResponseResult.okResult(pageVo);
 
     }
+
     @Override
     public Role findRoleById(Long roleId) {
-        return mongoTemplate.findById(roleId,Role.class);
+        return mongoTemplate.findById(roleId, Role.class);
     }
 
     @Override
     public void addRole(Role role) {
-    role.setId(idManager.getMaxRoleId().incrementAndGet());
-    role.setCreateBy(SecurityUtils.getUserId());
-    role.setCreateTime(DateUtil.date());
-    role.setDelFlag(0+"");
+        role.setId(idManager.getMaxRoleId().incrementAndGet());
+        role.setCreateBy(SecurityUtils.getUserId());
+        role.setCreateTime(DateUtil.date());
+        role.setDelFlag(0 + "");
+
         mongoTemplate.insert(role);
-        if(role.getMenuIds()!=null&&role.getMenuIds().length>0){
+        if (role.getMenuIds() != null && role.getMenuIds().length > 0) {
             addRoleMenu(role);
         }
+
+    }
+
+    @Override
+    public void removeById(Long id) {
+        //删除角色信息
+        mongoTemplate.remove(Query.query(Criteria.where("_id").is(id)), Role.class);
+        //删除角色绑定的菜单信息
+        roleMenuService.removeRoleMenuByRoleId(id);
+    }
+
+    @Override
+    public void updateRole(Role role) {
+
+        role.setUpdateTime(DateUtil.date());
+        role.setUpdateBy(SecurityUtils.getUserId());
+        //更新原有角色
+        mongoTemplate.save(role);
+        //删除原有菜单角色关联
+        roleMenuService.removeRoleMenuByRoleId(role.getId());
+        //更新最新菜单角色关联
+        addRoleMenu(role);
 
 
     }
 
     private void addRoleMenu(Role role) {
         List<RoleMenu> roleMenuList = Arrays.stream(role.getMenuIds())
-                .map(memuId -> new RoleMenu(role.getId(), memuId))
+                .map(memuId -> new RoleMenu(idManager.getMaxRoleId().incrementAndGet(),role.getId(), memuId))
                 .collect(Collectors.toList());
         roleMenuService.addRoleMenuBatch(roleMenuList);
     }

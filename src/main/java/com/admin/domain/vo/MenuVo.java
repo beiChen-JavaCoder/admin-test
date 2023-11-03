@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * 菜单权限表(Menu)表实体类
@@ -42,6 +43,8 @@ public class MenuVo {
     private String perms;
     //菜单图标
     private String icon;
+    //创建者
+    private Long createBy;
 
     //备注
     private String remark;
