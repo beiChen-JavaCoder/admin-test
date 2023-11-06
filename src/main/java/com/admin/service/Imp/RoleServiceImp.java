@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * @since 2022-08-09 22:36:47
  */
 @Service
-public class RoleServiceImpl implements RoleService {
+public class RoleServiceImp implements RoleService {
 
     @Autowired
     private MongoTemplate mongoTemplate;

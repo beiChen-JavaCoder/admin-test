@@ -5,8 +5,6 @@ import com.admin.domain.entity.MerchantOrderEntity;
 import com.admin.domain.vo.MerchantOrderVo;
 import com.admin.domain.vo.PageVo;
 
-import java.util.List;
-
 /**
  * @author Xqf
  * @version 1.0
@@ -14,4 +12,7 @@ import java.util.List;
 
 public interface MerchantOrderService {
     ResponseResult<PageVo> findOrderPage(MerchantOrderVo merchantOrderVo);
+
+    ResponseResult update(MerchantOrderEntity merchantOrder);
+
 }

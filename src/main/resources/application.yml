@@ -30,4 +30,7 @@ spring:
       #排除那个目录的文件不需要restart
       exclude: static/**,public/**
 
-
+myconfig:
+  #游戏请求地址
+  game:
+    ipPort: "192.168.10.62:9998"

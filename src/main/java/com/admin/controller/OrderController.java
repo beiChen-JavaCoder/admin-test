@@ -7,10 +7,8 @@ import com.admin.domain.vo.PageVo;
 import com.admin.service.MerchantOrderService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,6 +28,13 @@ public class OrderController {
     public ResponseResult<PageVo> list(MerchantOrderVo merchantOrderVo) {
 
         return merchantOrderService.findOrderPage(merchantOrderVo);
+
+    }
+    @PostMapping
+    public ResponseResult update(@RequestBody MerchantOrderEntity merchantOrder){
+
+        return merchantOrderService.update(merchantOrder);
+
 
     }
 

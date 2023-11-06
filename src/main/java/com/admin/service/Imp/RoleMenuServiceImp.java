@@ -15,7 +15,7 @@ import java.util.List;
  * @Author xqf
  */
 @Service
-public class RoleMenuServiceImpl implements RoleMenuService {
+public class RoleMenuServiceImp implements RoleMenuService {
 
     @Autowired
     private MongoTemplate mongoTemplate;

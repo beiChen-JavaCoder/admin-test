@@ -3,6 +3,7 @@ package com.admin.domain.entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.Column;
@@ -74,4 +75,9 @@ public class MerchantOrderEntity implements Serializable {
      */
     @Column(name = "time_out")
     long timeOut;
+    /**
+     * 超时时间转换
+     */
+    @Transient
+    String timeOutDate;
 }

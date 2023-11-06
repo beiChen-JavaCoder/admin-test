@@ -1,5 +1,6 @@
 package com.admin.domain.entity;
 
+import com.admin.dao.MerchantRepository;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
@@ -40,4 +41,10 @@ public class MerchantEntity {
      */
     @Column(name = "ratio")
     int ratio;
+    /**
+     * 商户金币
+     */
+    @Column(name = "gold")
+    Long gold;
+
 }

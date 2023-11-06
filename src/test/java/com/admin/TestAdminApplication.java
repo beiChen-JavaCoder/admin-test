@@ -1,25 +1,26 @@
 package com.admin;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.io.unit.DataUnit;
+import cn.hutool.http.HttpUtil;
 import com.admin.component.IdManager;
 import com.admin.constants.SystemConstants;
 import com.admin.dao.UserRepository;
 import com.admin.domain.ResponseResult;
+import com.admin.domain.dto.MerchantDto;
 import com.admin.domain.entity.Menu;
 import com.admin.domain.entity.MerchantBean;
-import com.admin.domain.dto.MerchantDto;
 import com.admin.domain.entity.User;
 import com.admin.domain.entity.UserRole;
-import com.admin.domain.vo.PageVo;
+import com.admin.notification.Notification;
 import com.admin.service.MerchantService;
 import com.admin.service.UserService;
 import com.admin.utils.AtomicIdGenerator;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.bcel.BcelAccessForInlineMunger;
-import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,7 +30,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -199,6 +199,19 @@ private IdManager idManager;
             e.printStackTrace();
         }
         mongoTemplate.insert(new UserRole());
+    }
+    @Test
+    void getScore(){
+
+//        JSONArray jsonArray = Notification.getControlScoreNotification().getJSONArray();
+        String controlScoreNotification = HttpUtil.post("http://192.168.10.62:9998/control/getControlConfigs","");
+        JSONArray objects = JSONArray.parseArray(controlScoreNotification);
+        ArrayList<JSONObject> jsonObjects = new ArrayList<>();
+        for (Object reGame : objects) {
+            jsonObjects.add((JSONObject) reGame);
+        }
+        log.info(jsonObjects.toString());
+
     }
 
 }
