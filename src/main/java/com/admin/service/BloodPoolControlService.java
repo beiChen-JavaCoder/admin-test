@@ -1,6 +1,7 @@
 package com.admin.service;
 
 import com.admin.domain.ResponseResult;
+import com.admin.domain.vo.GameControlVo;
 
 /**
  * @author Xqf
@@ -8,5 +9,7 @@ import com.admin.domain.ResponseResult;
  */
 public interface BloodPoolControlService {
     ResponseResult getScore();
+
+    ResponseResult updateGame(GameControlVo game);
 
 }

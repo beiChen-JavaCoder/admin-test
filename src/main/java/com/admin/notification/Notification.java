@@ -6,10 +6,8 @@ import com.admin.enums.MerchantTypeEnum;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -17,6 +15,8 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 
 /**
+ * 通知请求类
+ *
  * @author Xqf
  * @version 1.0
  */
@@ -45,10 +45,26 @@ public class Notification {
     private String GET_CONTROL_CONFIGS;
 
     /**
-     * 点控信息获取url
+     * 血池修改url
      */
     private String UPDATE_BLOOD_CONTROL;
 
+    /**
+     * 点控获取信息
+     */
+    private String POINT_CONTROL_GET;
+
+    /**
+     * 点控获取信息
+     */
+    private String POINT_CONTROL_UPDATE;
+
+    /**
+     * 商户相关请求
+     *
+     * @param merchantDto
+     * @return
+     */
     public String notificationMerchant(MerchantDto merchantDto) {
 
         String url = null;
@@ -67,7 +83,7 @@ public class Notification {
             url = MERCHANT_CASH_CHANGE;
         }
         JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(url, jsonString));
-        if (0==(Integer) parse.get("errcode")) {
+        if (0 == (Integer) parse.get("errcode")) {
             return "0";
         }
         return "1";
@@ -79,7 +95,7 @@ public class Notification {
      *
      * @return null
      */
-    public ArrayList<JSONObject> getControlScoreNotification() {
+    public ArrayList<JSONObject> getGameNotification() {
         Object parse = JSONArray.parse(HttpUtil.post(GET_CONTROL_CONFIGS, ""));
 
         JSONArray jsonArray = JSONArray.parseArray(parse.toString());
@@ -95,6 +111,45 @@ public class Notification {
         return null;
     }
 
+    /**
+     * 修改血池信息
+     *
+     * @param bloodPoolControl
+     * @return
+     */
+    public String updateGameBloodNotification(JSONObject bloodPoolControl) {
+        //血池type为空
+        bloodPoolControl.put("type", null);
+        String jsonString = JSON.toJSONString(bloodPoolControl);
+        JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(UPDATE_BLOOD_CONTROL, jsonString));
+        if (0 == (Integer) parse.get("errcode")) {
+            return "0";
+        }
+        return "1";
+    }
+
+    /**
+     * 获取点控信息
+     *
+     * @return
+     */
+    public ArrayList<JSONObject> getUserNotification() {
+        Object parse = JSONArray.parse(HttpUtil.post(POINT_CONTROL_GET, ""));
+
+        JSONArray jsonArray = JSONArray.parseArray(parse.toString());
+        ArrayList<JSONObject> jsonObjects = new ArrayList<>();
+        for (Object reGame : jsonArray) {
+            jsonObjects.add((JSONObject) reGame);
+        }
+        log.info(jsonObjects.toString());
+
+        if (StringUtils.hasText(parse.toString())) {
+            return jsonObjects;
+        }
+        return null;
+    }
+
+
     @PostConstruct
     public void init() {
         MERCHANT_LIST_CHANGE = "http://" + ipPort + "/hall/merchant/merchantListChange";
@@ -102,5 +157,7 @@ public class Notification {
         MERCHANT_CASH_CHANGE = "http://" + ipPort + "/hall/merchant/cash";
         GET_CONTROL_CONFIGS = "http://" + ipPort + "/control/getControlConfigs";
         UPDATE_BLOOD_CONTROL = "http://" + ipPort + "/control/updateBloodControl";
+        POINT_CONTROL_GET = "http://" + ipPort + "/control/getUserControlConfigs";
+        POINT_CONTROL_UPDATE = "http://" + ipPort + "/control/updateUserControl";
     }
 }

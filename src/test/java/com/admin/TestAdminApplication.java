@@ -40,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @SpringBootTest(classes = AdminTest.class)
@@ -203,7 +205,7 @@ private IdManager idManager;
     @Test
     void getScore(){
 
-//        JSONArray jsonArray = Notification.getControlScoreNotification().getJSONArray();
+//        JSONArray jsonArray = Notification.getGameNotification().getJSONArray();
         String controlScoreNotification = HttpUtil.post("http://192.168.10.62:9998/control/getControlConfigs","");
         JSONArray objects = JSONArray.parseArray(controlScoreNotification);
         ArrayList<JSONObject> jsonObjects = new ArrayList<>();
@@ -212,6 +214,18 @@ private IdManager idManager;
         }
         log.info(jsonObjects.toString());
 
+    }
+    @Test
+    void zhengzebiaodashi(){
+
+        String regex = "^(?!0$)([1-9]\\d{0,3}|10000)$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher("1000");
+        if (!matcher.matches()) {
+            log.error("匹配失败");
+        }else {
+            log.info("匹配成功");
+        }
     }
 
 }

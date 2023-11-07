@@ -2,9 +2,17 @@ package com.admin.controller;
 
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.BloodPoolControl;
+import com.admin.domain.entity.UserControl;
+import com.admin.domain.vo.GameControlVo;
 import com.admin.service.BloodPoolControlService;
+import com.admin.service.UserControlService;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Xqf
@@ -16,6 +24,8 @@ public class GameController {
 
     @Autowired
     private BloodPoolControlService bloodPoolControlService;
+    @Autowired
+    private UserControlService userControlService;
 
 
 //    @PutMapping("/blood")
@@ -29,11 +39,22 @@ public class GameController {
 //    }
 
     @GetMapping("/blood")
-    public ResponseResult getScore() {
+    public ResponseResult getGame() {
 
         return bloodPoolControlService.getScore();
 
     }
 
+    @PutMapping("/blood")
+    public ResponseResult updateGame(@RequestBody GameControlVo gameControlVo) {
+        return bloodPoolControlService.updateGame(gameControlVo);
+
+    }
+
+    @GetMapping("/p2p")
+    public ResponseResult getPtp() {
+
+        return userControlService.listPtp();
+    }
 
 }
