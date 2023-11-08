@@ -19,7 +19,7 @@ spring:
       port: 27017
 
   profiles:
-    active:
+    active: dev
 
   redis:
     host: localhost

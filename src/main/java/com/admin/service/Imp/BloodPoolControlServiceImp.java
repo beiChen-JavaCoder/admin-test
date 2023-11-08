@@ -1,6 +1,8 @@
 package com.admin.service.Imp;
 
 import com.admin.domain.ResponseResult;
+import com.admin.domain.entity.BloodPoolControl;
+import com.admin.domain.entity.UserControl;
 import com.admin.domain.vo.GameControlVo;
 import com.admin.domain.vo.PageVo;
 import com.admin.enums.GameControlTypeEnum;
@@ -44,42 +46,51 @@ public class BloodPoolControlServiceImp implements BloodPoolControlService {
         JSONObject controlGameType = new JSONObject();
 
 
-        JSONObject controlGame= (JSONObject) gameControlVo.getGame();
-
-
-
-
+        JSONObject controlGame = (JSONObject) gameControlVo.getGame();
 
         Integer controlType = gameControlVo.getType();
 
         if (controlType.equals(GameControlTypeEnum.bigVomitControl.getType())) {
-            controlGameType= (JSONObject)controlGame.get("bigVomitControl");
+            controlGameType = (JSONObject) controlGame.get("bigVomitControl");
+            controlGameType.put("type",BloodPoolControl.UpdateType.bigVomit);
         } else if (controlType.equals(GameControlTypeEnum.vomitControl.getType())) {
-            controlGameType=(JSONObject)controlGame.get("vomitControl");
+            controlGameType = (JSONObject) controlGame.get("vomitControl");
+            controlGameType.put("type",BloodPoolControl.UpdateType.vomit);
         } else if (controlType.equals(GameControlTypeEnum.bigEatControl.getType())) {
-            controlGameType=(JSONObject)controlGame.get("bigEatControl");
+            controlGameType = (JSONObject) controlGame.get("bigEatControl");
+            controlGameType.put("type",BloodPoolControl.UpdateType.bigEat);
         } else if (controlType.equals(GameControlTypeEnum.eatControl.getType())) {
-            controlGameType=(JSONObject)controlGame.get("eatControl");
+            controlGameType = (JSONObject) controlGame.get("eatControl");
+            controlGameType.put("type",BloodPoolControl.UpdateType.eat);
         } else {
 
-            controlGameType.put("score",gameControlVo.getScore());
+            String.valueOf(controlGameType.put("score", gameControlVo.getScore()));
+            // 获取字段值并进行正则表达式验证
+            String regex = "^[+-]?(?!0$)([1-9]\\d{0,3}|999999999)$";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(gameControlVo.getScore());
+            if (!matcher.matches()) {
+                return ResponseResult.errorResult(500, "请按规则输入信息");
+            }
 
         }
-        controlGameType.put("gameId",controlGame.get("gameId"));
+        controlGameType.put("gameId", controlGame.get("gameId"));
         String ratio = String.valueOf(controlGameType.get("ratio"));
-        // 获取字段值并进行正则表达式验证
-
-        String regex = "^(?!0$)([1-9]\\d{0,3}|10000)$";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(ratio);
-        if (!matcher.matches()) {
-            return ResponseResult.errorResult(500,"请按规则输入信息");
+        if (!StringUtils.hasText(ratio)){
+            // 获取字段值并进行正则表达式验证
+            String regex = "^(?!0$)([1-9]\\d{0,3}|10000)$";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(ratio);
+            if (!matcher.matches()) {
+                return ResponseResult.errorResult(500, "请按规则输入信息");
+            }
         }
 
+//        String reMsg = notification.updateGameBloodNotification(controlGameType);
 
-        if ("0".equals(notification.updateGameBloodNotification(controlGameType))) {
-            log.info("更新血池成功,"+controlGameType);
-            return ResponseResult.okResult(200,"血池更新成功");
+        if ("0".equals("0")) {
+            log.info("更新血池成功," + controlGameType);
+            return ResponseResult.okResult(200, "血池更新成功");
         }
         log.error("更新血池失败," + gameControlVo);
         return ResponseResult.errorResult(500, "血池更新失败，请联系管理员");

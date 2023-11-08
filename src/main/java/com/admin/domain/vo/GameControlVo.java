@@ -14,5 +14,5 @@ public class GameControlVo {
 
     private Integer type;
     private Object game;
-    private Long score;
+    private String score;
 }

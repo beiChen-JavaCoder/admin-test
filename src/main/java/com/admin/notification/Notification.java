@@ -119,7 +119,6 @@ public class Notification {
      */
     public String updateGameBloodNotification(JSONObject bloodPoolControl) {
         //血池type为空
-        bloodPoolControl.put("type", null);
         String jsonString = JSON.toJSONString(bloodPoolControl);
         JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(UPDATE_BLOOD_CONTROL, jsonString));
         if (0 == (Integer) parse.get("errcode")) {
@@ -134,6 +133,7 @@ public class Notification {
      * @return
      */
     public ArrayList<JSONObject> getUserNotification() {
+
         Object parse = JSONArray.parse(HttpUtil.post(POINT_CONTROL_GET, ""));
 
         JSONArray jsonArray = JSONArray.parseArray(parse.toString());
@@ -148,8 +148,22 @@ public class Notification {
         }
         return null;
     }
-
-
+    /**
+     * 修改点控信息
+     *
+     * @param userControl
+     * @return
+     */
+    public String updateUserControl(JSONObject userControl) {
+        //更新type为空
+        userControl.put("type", 2);
+        String jsonString = JSON.toJSONString(userControl);
+        JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(POINT_CONTROL_UPDATE, jsonString));
+        if (0 == (Integer) parse.get("errcode")) {
+            return "0";
+        }
+        return "1";
+    }
     @PostConstruct
     public void init() {
         MERCHANT_LIST_CHANGE = "http://" + ipPort + "/hall/merchant/merchantListChange";

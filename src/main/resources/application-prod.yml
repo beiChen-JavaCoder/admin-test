@@ -1,8 +1,9 @@
-
 server:
   port: 8000
 
 spring:
+  profiles:
+    active: dev
   #数据源配置
   data:
     mongodb:
@@ -10,16 +11,13 @@ spring:
       #      host: 121.41.45.228
       # 数据库
       database: game
-
+      # 默认端口是27017
+      #      port: 27017
       username: root
       password: '123456'
       authentication-database: admin
       host: 192.168.10.62
-      # 默认端口是27017
-      port: 27017
 
-  profiles:
-    active:
 
   redis:
     host: localhost
@@ -43,13 +41,13 @@ myconfig:
     ipPort: "192.168.10.62:9998"
 
   #日志配置
-#logging:
-#  level:
-#    root: INFO
-#  console:
-#    level: INFO
-#  file:
-#    level: INFO
-#    name: admin.log
-#    path: ../logs
-#    enabled: true
+logging:
+  level:
+    root: INFO
+  console:
+    level: INFO
+  file:
+    level: INFO
+    name: admin.log
+    path: /var/myapp/
+    enabled: true

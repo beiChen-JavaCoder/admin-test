@@ -4,6 +4,7 @@ import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.BloodPoolControl;
 import com.admin.domain.entity.UserControl;
 import com.admin.domain.vo.GameControlVo;
+import com.admin.domain.vo.UserControlVo;
 import com.admin.service.BloodPoolControlService;
 import com.admin.service.UserControlService;
 import com.alibaba.fastjson.JSONObject;
@@ -54,7 +55,12 @@ public class GameController {
     @GetMapping("/p2p")
     public ResponseResult getPtp() {
 
-        return userControlService.listPtp();
+        return userControlService.userControlList();
+    }
+    @PutMapping("/p2p")
+    public ResponseResult updateGameUser(@RequestBody UserControl userControl) {
+        return userControlService.updateUserControl(userControl);
+
     }
 
 }
