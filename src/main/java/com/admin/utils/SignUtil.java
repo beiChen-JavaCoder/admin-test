@@ -68,9 +68,7 @@ public class SignUtil {
             str.append(param.getValue()).append("|");
         }
         str.append(SIGN_KEY);
-        log.info("加密前：" + str.toString());
         String md5Str = SecureUtil.md5(str.toString());
-        log.info("加密后：" + md5Str);
         return md5Str;
     }
 

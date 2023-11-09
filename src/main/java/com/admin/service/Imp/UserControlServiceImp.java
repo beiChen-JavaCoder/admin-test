@@ -34,6 +34,7 @@ public class UserControlServiceImp implements UserControlService {
         PageVo pageVo = new PageVo();
         pageVo.setRows(controlScoreNotification);
         pageVo.setTotal(Long.valueOf(controlScoreNotification.size()));
+        log.info("获取到点控控制台信息："+pageVo);
         return ResponseResult.okResult(pageVo);
     }
 

@@ -6,15 +6,14 @@ import com.admin.domain.entity.MerchantOrderEntity;
 import com.admin.domain.entity.User;
 import com.admin.domain.vo.MerchantOrderVo;
 import com.admin.domain.vo.PageVo;
-import com.admin.enums.AppHttpCodeEnum;
 import com.admin.enums.MerchantOrderTypeEnum;
 import com.admin.enums.MerchantTypeEnum;
-import com.admin.exception.SystemException;
+import com.admin.enums.OrderAccountTypeEnum;
 import com.admin.notification.Notification;
 import com.admin.service.MerchantOrderService;
 import com.admin.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -68,15 +67,39 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
 
         // 使用 MongoTemplate 执行查询：
         List<MerchantOrderEntity> merchantOrders = mongoTemplate.find(query, MerchantOrderEntity.class);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-        for (MerchantOrderEntity me :
-                merchantOrders) {
-            me.setTimeOutDate(dateFormat.format(new Date(me.getTimeOut())));
-        }
         //统计总数
-        long total = merchantOrders.size();
+        long total = mongoTemplate.count(query,MerchantOrderEntity.class);
+        merchantOrders.forEach(merchantOrder -> {
+            Integer status = merchantOrder.getStatus();
+            int accountType = merchantOrder.getAccountType();
+            //判断账户类型
+            if (accountType == OrderAccountTypeEnum.WECHAT.getType()) {
+                merchantOrder.setSAccountType(OrderAccountTypeEnum.WECHAT.getMsg());
+            } else if (accountType == OrderAccountTypeEnum.ALIPAY.getType()) {
+                merchantOrder.setSAccountType(OrderAccountTypeEnum.ALIPAY.getMsg());
+            } else {
+                merchantOrder.setSAccountType(OrderAccountTypeEnum.Bank.getMsg());
 
+            }
+            //判断用户状态
+            if (status == MerchantOrderTypeEnum.UNTREATED.getType()) {
+                merchantOrder.setSStatus(MerchantOrderTypeEnum.UNTREATED.getMsg());
+            } else if (status == MerchantOrderTypeEnum.processed.getType()) {
+                merchantOrder.setSStatus(MerchantOrderTypeEnum.processed.getMsg());
+
+            } else if (status == MerchantOrderTypeEnum.REFUSE.getType()) {
+                merchantOrder.setSStatus(MerchantOrderTypeEnum.REFUSE.getMsg());
+
+            } else if (status == MerchantOrderTypeEnum.PROCESSING_TIMEOUT.getType()) {
+                merchantOrder.setSStatus(MerchantOrderTypeEnum.PROCESSING_TIMEOUT.getMsg());
+
+            }
+            //转换时间戳
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            merchantOrder.setTimeOutDate(dateFormat.format(new Date(merchantOrder.getTimeOut())));
+            merchantOrder.setCreateTimeDate(dateFormat.format(new Date(merchantOrder.getCreateTime())));
+        });
         PageVo pageVo = new PageVo();
         pageVo.setTotal(total);
         pageVo.setRows(merchantOrders);

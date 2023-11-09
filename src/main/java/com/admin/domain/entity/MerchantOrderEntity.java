@@ -40,6 +40,7 @@ public class MerchantOrderEntity implements Serializable {
      */
     @Column(name = "account_type")
     int accountType;
+
     /**
      * 收款账号
      */
@@ -69,15 +70,22 @@ public class MerchantOrderEntity implements Serializable {
      * 订单创建时间
      */
     @Column(name = "create_time")
-    Date createTime;
+    Long createTime;
     /**
      * 处理超时时间(到达此时间数据未处理则进入废弃处理流程)
      */
     @Column(name = "time_out")
     long timeOut;
     /**
-     * 超时时间转换
+     * 用于前端转换
      */
     @Transient
+    String sAccountType;
+    @Transient
+    String sStatus;
+    @Transient
+    String createTimeDate;
+    @Transient
     String timeOutDate;
+
 }

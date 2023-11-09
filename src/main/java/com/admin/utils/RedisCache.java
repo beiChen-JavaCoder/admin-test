@@ -20,10 +20,11 @@ public class RedisCache
     /**
      * 缓存基本的对象，Integer、String、实体类等
      *
-     * @param key 缓存的键值
-     * @param value 缓存的值
+     * @param key     缓存的键值
+     * @param value   缓存的值
+     * @param timeOut
      */
-    public <T> void setCacheObject(final String key, final T value)
+    public <T> void setCacheObject(final String key, final T value, Integer timeOut)
     {
         redisTemplate.opsForValue().set(key, value);
     }

@@ -103,6 +103,7 @@
             <artifactId>spring-boot-devtools</artifactId>
             <!-- 有人说optional一定要配置成true才有效, 但我调试完感觉不加optional也有效 -->
             <optional>true</optional>
+            <scope>runtime</scope>
         </dependency>
 
 

@@ -213,8 +213,6 @@ private IdManager idManager;
         for (Object reGame : objects) {
             jsonObjects.add((JSONObject) reGame);
         }
-        log.info(jsonObjects.toString());
-
     }
     @Test
     void zhengzebiaodashi(){

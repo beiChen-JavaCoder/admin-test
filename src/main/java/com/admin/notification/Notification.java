@@ -141,7 +141,6 @@ public class Notification {
         for (Object reGame : jsonArray) {
             jsonObjects.add((JSONObject) reGame);
         }
-        log.info(jsonObjects.toString());
 
         if (StringUtils.hasText(parse.toString())) {
             return jsonObjects;

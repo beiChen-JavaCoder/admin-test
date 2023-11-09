@@ -54,7 +54,6 @@ public class GameController {
 
     @GetMapping("/p2p")
     public ResponseResult getPtp() {
-
         return userControlService.userControlList();
     }
     @PutMapping("/p2p")
