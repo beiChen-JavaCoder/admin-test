@@ -2,7 +2,7 @@
 <configuration>
     <contextName>admin</contextName>
     <!-- 日志的输出目录 -->
-    <property name="log.path" value="service-core/logs" />
+    <property name="log.path" value="./logs/" />
 
     <!--控制台日志格式：彩色日志-->
     <!-- magenta:洋红 -->
@@ -28,16 +28,16 @@
             <charset>${ENCODING}</charset>
         </encoder>
     </appender>
-
+<!--普通日志策略-->
     <!-- 文件日志 -->
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>${log.path}/log.log</file>
-        <append>true</append>
-        <encoder>
-            <pattern>${FILE_LOG_PATTERN}</pattern>
-            <charset>${ENCODING}</charset>
-        </encoder>
-    </appender>
+<!--    <appender name="FILE" class="ch.qos.logback.core.FileAppender">-->
+<!--        <file>${log.path}/log.log</file>-->
+<!--        <append>true</append>-->
+<!--        <encoder>-->
+<!--            <pattern>${FILE_LOG_PATTERN}</pattern>-->
+<!--            <charset>${ENCODING}</charset>-->
+<!--        </encoder>-->
+<!--    </appender>-->
 
     <appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 
@@ -54,10 +54,10 @@
             <!-- 日志归档路径以及格式 -->
             <fileNamePattern>${log.path}/info/log-rolling-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <!--归档日志文件保留的最大数量-->
-            <maxHistory>1MB</maxHistory>
+            <maxHistory>15</maxHistory>
 
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>1MB</maxFileSize>
+                <maxFileSize>1kb</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
 
@@ -69,16 +69,16 @@
     <!--        <appender-ref ref="FILE" />-->
     <!--    </logger>-->
 
-    <!-- 开发环境和测试环境 -->
+    <!-- 生产环境和测试环境 -->
     <springProfile name="prod,test">
         <logger name="com.admin" level="INFO">
             <appender-ref ref="CONSOLE" />
         </logger>
     </springProfile>
 
-    <!-- 生产环境 -->
-    <springProfile name="dev">
-        <logger name="com.admin" level="INFO">
+    <!-- 开发环境 -->
+    <springProfile name="development">
+        <logger name="com.admin" level="Info">
             <appender-ref ref="CONSOLE" />
             <appender-ref ref="ROLLING_FILE" />
         </logger>

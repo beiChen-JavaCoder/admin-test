@@ -13,6 +13,8 @@ import com.admin.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
 /**
  * 角色信息表(Role)表服务实现类
@@ -43,10 +47,17 @@ public class RoleServiceImp implements RoleService {
     @Override
     public List<String> selectRoleKeyByUserId(Long id) {
         //判断是否是管理员 如果是返回集合中只需要有admin
+        //id==1L
+        if (true) {
+            List<String> roleKeys = new ArrayList<>();
+            roleKeys.add("admin");
+            return roleKeys;
+        }
+        //否则返回该角色对应的权限
+        //待测试
+        return selectRoleKeyByUserId(id);
 
-        List<String> roleKeys = new ArrayList<>();
-        roleKeys.add("admin");
-        return roleKeys;
+
     }
 
     @Override
@@ -130,13 +141,13 @@ public class RoleServiceImp implements RoleService {
 
     private void addRoleMenu(Role role) {
         List<RoleMenu> roleMenuList = Arrays.stream(role.getMenuIds())
-                .map(memuId -> new RoleMenu(idManager.getMaxRoleId().incrementAndGet(),role.getId(), memuId))
+                .map(memuId -> new RoleMenu(idManager.getMaxRoleId().incrementAndGet(), role.getId(), memuId))
                 .collect(Collectors.toList());
         roleMenuService.addRoleMenuBatch(roleMenuList);
     }
 
 
-//    @Override
+    //    @Override
 //    public ResponseResult selectRolePage(Role role, Integer pageNum, Integer pageSize) {
 //        LambdaQueryWrapper<Role> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 //        //目前没有根据id查询
@@ -179,7 +190,6 @@ public class RoleServiceImp implements RoleService {
 //    @Override
 //    public List<Role> selectRoleAll() {
 //        return list(Wrappers.<Role>lambdaQuery().eq(Role::getStatus, SystemConstants.NORMAL));
-//    }
 //
 //    @Override
 //    public List<Long> selectRoleIdByUserId(Long userId) {
@@ -192,5 +202,42 @@ public class RoleServiceImp implements RoleService {
 //                .collect(Collectors.toList());
 //        roleMenuService.saveBatch(roleMenuList);
 //    }
+    private List<Long> findRoleIdsByUserId(Long userId) {
+        Aggregation aggregation = newAggregation(
+                match(Criteria.where("user_id").is(userId)),
+                lookup("sys_role", "role_id", "id", "roles"),
+                unwind("roles"),
+                project().and("roles.id").as("role_id")
+        );
+
+        AggregationResults<Long> results = mongoTemplate.aggregate(aggregation, "sys_user_role", Long.class);
+        List<Long> mappedResults = results.getMappedResults();
+
+        // 处理结果并返回需要的数据
+        List<Long> roleIds = new ArrayList<>();
+        for (Long result : mappedResults) {
+            roleIds.add(result);
+        }
+        return roleIds;
+    }
+
+    private List<String> findRoleIdsByUserId(String userId) {
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(Criteria.where("user_id").is(userId)),
+                Aggregation.lookup("sys_role", "role_id", "id", "roles"),
+                Aggregation.unwind("roles"),
+                Aggregation.match(Criteria.where("roles.status").is(0).and("roles.del_flag").is(0)),
+                Aggregation.project("roles.role_key").andExclude("_id")
+        );
+
+        AggregationResults<String> results = mongoTemplate.aggregate(aggregation, "sys_user_role", String.class);
+        List<String> roleKeys = new ArrayList<>();
+        for (String roleKey : results.getMappedResults()) {
+
+            roleKeys.add(roleKey);
+        }
+        return roleKeys;
+    }
 }
 
