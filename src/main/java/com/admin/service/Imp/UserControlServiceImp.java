@@ -5,6 +5,7 @@ import com.admin.domain.entity.UserControl;
 import com.admin.domain.vo.PageVo;
 import com.admin.notification.Notification;
 import com.admin.service.UserControlService;
+import com.admin.utils.SecurityUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,7 @@ public class UserControlServiceImp implements UserControlService {
         PageVo pageVo = new PageVo();
         pageVo.setRows(controlScoreNotification);
         pageVo.setTotal(Long.valueOf(controlScoreNotification.size()));
-        log.info("获取到点控控制台信息："+pageVo);
+        log.info("获取到点控控制台信息：" + pageVo);
         return ResponseResult.okResult(pageVo);
     }
 
@@ -51,12 +52,31 @@ public class UserControlServiceImp implements UserControlService {
         if (!matcher.matches()) {
             return ResponseResult.errorResult(500, "请按规则输入信息");
         }
-//        String reMsg = notification.updateUserControl(userControlJson);
-        if ("0".equals("0")){
+        String reMsg = notification.updateUserControl(userControlJson);
+        if ("0".equals(reMsg)) {
             log.info("更新点控成功：" + userControlJson);
             return ResponseResult.okResult(200, "点控更新成功");
         }
         log.error("更新点控失败：" + userControlJson);
-        return ResponseResult.errorResult(500, "点控更新失败，请联系管理员");
+        return ResponseResult.errorResult(500, "点控更新失败");
+    }
+
+    @Override
+    public ResponseResult addUserControl(UserControl userControl) {
+        JSONObject userControlJson = (JSONObject) JSONObject.toJSON(userControl);
+        Long userId = SecurityUtils.getUserId();
+        String remsg = notification.addUserControl(userControlJson);
+        if ("0".equals(remsg)) {
+            log.info("用户id："+userId+"新增点控成功"+userControl);
+            return ResponseResult.okResult(200, "新增点控成功");
+        }
+        log.error("用户id："+userId+"新增点控失败"+userControl);
+        return ResponseResult.errorResult(500, "新增点控失败");
+    }
+
+    @Override
+    public ResponseResult importRotbot(List<JSONObject> userControl) {
+
+        return null;
     }
 }

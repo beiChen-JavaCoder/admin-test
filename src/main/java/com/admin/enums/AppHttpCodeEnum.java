@@ -23,7 +23,10 @@ public enum AppHttpCodeEnum {
     NOTIFICATION_NO(508,"变更列表通知失败"),
     RECHARGE_NO(509,"充值对象不存在"),
     ADD_USER_MERCHANT_NO(510,"添加用户商户或绑定商户失败"),
-    NOTIFICATION_FAILURE(511,"通知失败");
+    NOTIFICATION_FAILURE(1,"通知失败"),
+    NOTIFICATION_SUCCESS(0,"通知成功"),
+    SCORE_NOT_NULL(500,"血池分数不能为空");
+
 
     int code;
     String msg;

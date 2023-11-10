@@ -5,13 +5,16 @@ import com.admin.domain.entity.BloodPoolControl;
 import com.admin.domain.entity.UserControl;
 import com.admin.domain.vo.GameControlVo;
 import com.admin.domain.vo.PageVo;
+import com.admin.enums.AppHttpCodeEnum;
 import com.admin.enums.GameControlTypeEnum;
 import com.admin.notification.Notification;
 import com.admin.service.BloodPoolControlService;
+import com.admin.utils.AssertUtils;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -42,6 +45,9 @@ public class BloodPoolControlServiceImp implements BloodPoolControlService {
 
     @Override
     public ResponseResult updateGame(GameControlVo gameControlVo) {
+        //断言不为空
+        AssertUtils.notNull(gameControlVo.getScore(), AppHttpCodeEnum.SCORE_NOT_NULL);
+
 
         JSONObject controlGameType = new JSONObject();
 
@@ -86,9 +92,9 @@ public class BloodPoolControlServiceImp implements BloodPoolControlService {
             }
         }
 
-//        String reMsg = notification.updateGameBloodNotification(controlGameType);
+        String reMsg = notification.updateGameBloodNotification(controlGameType);
 
-        if ("0".equals("0")) {
+        if ("0".equals(reMsg)) {
             log.info("更新血池成功," + controlGameType);
             return ResponseResult.okResult(200, "血池更新成功");
         }

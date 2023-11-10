@@ -36,8 +36,7 @@ public class RechargeController {
     public ResponseResult updateGold(@RequestBody RechargeVo rechargeVo) {
 
 
-        Long userId = SecurityUtils.getUserId();
-        rechargeVo.setMerchantId(Long.valueOf(userId));
+
 
         return roleInfoService.updateRoleGold(rechargeVo);
 

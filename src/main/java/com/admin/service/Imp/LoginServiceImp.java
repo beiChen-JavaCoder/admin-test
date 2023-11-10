@@ -54,7 +54,7 @@ public class LoginServiceImp implements LoginService {
         //把token和userinfo封装 返回
         //把User转换成UserInfoVo
         UserInfoVo userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserInfoVo.class);
-        log.info("用户"+userId+"登录成功"+userInfoVo);
+        log.info("用户"+userId+"登录成功"+loginUser.getUser());
         adminUserLoginVo vo = new adminUserLoginVo(jwt,userInfoVo);
         return ResponseResult.okResult(vo);
     }
@@ -65,7 +65,7 @@ public class LoginServiceImp implements LoginService {
         Long userId = SecurityUtils.getUserId();
         //删除redis中对应的值
         redisCache.deleteObject("login:"+userId);
-
+        log.info("用户"+userId+"退出登录");
         return ResponseResult.okResult();
     }
 }

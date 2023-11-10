@@ -9,8 +9,17 @@ import com.admin.domain.vo.GameControlVo;
  * @version 1.0
  */
 public interface BloodPoolControlService {
+    /**
+     * 获取血池列表
+     * @return
+     */
     ResponseResult getScore();
 
+    /**
+     * 更新血池分数
+     * @param game
+     * @return
+     */
     ResponseResult updateGame(GameControlVo game);
 
 }

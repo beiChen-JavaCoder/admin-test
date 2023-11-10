@@ -1,9 +1,6 @@
 package com.admin.domain.vo;
 
-import com.admin.controller.GameController;
-import com.admin.domain.entity.BloodPoolControl;
 import lombok.Data;
-import org.bson.json.JsonObject;
 
 /**
  * @author Xqf

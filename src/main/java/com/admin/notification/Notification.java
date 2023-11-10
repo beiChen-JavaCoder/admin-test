@@ -58,6 +58,11 @@ public class Notification {
      * 点控获取信息
      */
     private String POINT_CONTROL_UPDATE;
+    /**
+     * 新增点控对象
+     */
+    private String POINT_CONTROL_ADD;
+
 
     /**
      * 商户相关请求
@@ -147,6 +152,7 @@ public class Notification {
         }
         return null;
     }
+
     /**
      * 修改点控信息
      *
@@ -154,8 +160,7 @@ public class Notification {
      * @return
      */
     public String updateUserControl(JSONObject userControl) {
-        //更新type为空
-        userControl.put("type", 2);
+
         String jsonString = JSON.toJSONString(userControl);
         JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(POINT_CONTROL_UPDATE, jsonString));
         if (0 == (Integer) parse.get("errcode")) {
@@ -163,6 +168,23 @@ public class Notification {
         }
         return "1";
     }
+
+    /**
+     * 新增点控信息
+     *
+     * @param userControl
+     * @return
+     */
+    public String addUserControl(JSONObject userControl) {
+
+        String jsonString = JSON.toJSONString(userControl);
+        JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(POINT_CONTROL_ADD, jsonString));
+        if (0 == (Integer) parse.get("errcode")) {
+            return "0";
+        }
+        return "1";
+    }
+
     @PostConstruct
     public void init() {
         MERCHANT_LIST_CHANGE = "http://" + ipPort + "/hall/merchant/merchantListChange";
@@ -172,5 +194,6 @@ public class Notification {
         UPDATE_BLOOD_CONTROL = "http://" + ipPort + "/control/updateBloodControl";
         POINT_CONTROL_GET = "http://" + ipPort + "/control/getUserControlConfigs";
         POINT_CONTROL_UPDATE = "http://" + ipPort + "/control/updateUserControl";
+        POINT_CONTROL_ADD = "http://" + ipPort + "/control/updateUserControl";
     }
 }

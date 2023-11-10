@@ -3,23 +3,23 @@ server:
   port: 8000
 
 spring:
+  config:
+    activate:
+      on-profile:
+        - dev
   #数据源配置
   data:
     mongodb:
       # 主机地址
       #      host: 121.41.45.228
       # 数据库
-      database: game
-
+      database: manage
       username: root
       password: '123456'
       authentication-database: admin
       host: 192.168.10.62
       # 默认端口是27017
       port: 27017
-
-  profiles:
-    active: dev
 
   redis:
     host: localhost
@@ -33,6 +33,7 @@ spring:
       additional-paths: src/main/java
       #排除那个目录的文件不需要restart
       exclude: static/**,public/**
+
 
 
 

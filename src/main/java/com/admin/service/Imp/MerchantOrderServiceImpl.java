@@ -1,5 +1,6 @@
 package com.admin.service.Imp;
 
+import com.admin.config.MongoUtil;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.dto.MerchantDto;
 import com.admin.domain.entity.MerchantOrderEntity;
@@ -12,8 +13,8 @@ import com.admin.enums.OrderAccountTypeEnum;
 import com.admin.notification.Notification;
 import com.admin.service.MerchantOrderService;
 import com.admin.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -31,13 +32,14 @@ import java.util.Objects;
  * @version 1.0
  */
 @Service
-
+@Slf4j
 public class MerchantOrderServiceImpl implements MerchantOrderService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+
     @Autowired
-    private Notification notification;
+    private MongoUtil mongoUtil;
 
 
     @Override
@@ -66,10 +68,13 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
         Query query = Query.query(criteria).with(pageable);
 
         // 使用 MongoTemplate 执行查询：
-        List<MerchantOrderEntity> merchantOrders = mongoTemplate.find(query, MerchantOrderEntity.class);
+//        List<MerchantOrderEntity> merchantOrders = mongoTemplate.find(query, MerchantOrderEntity.class);
+
+        List<MerchantOrderEntity> merchantOrders = mongoUtil.getGameTemplate().find(query, MerchantOrderEntity.class);
 
         //统计总数
-        long total = mongoTemplate.count(query,MerchantOrderEntity.class);
+        long total = mongoUtil.getGameTemplate().count(query, MerchantOrderEntity.class);
+
         merchantOrders.forEach(merchantOrder -> {
             Integer status = merchantOrder.getStatus();
             int accountType = merchantOrder.getAccountType();
@@ -103,6 +108,8 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
         PageVo pageVo = new PageVo();
         pageVo.setTotal(total);
         pageVo.setRows(merchantOrders);
+
+        log.info("用户id：" + userId + "查询了提现列表" + pageVo);
         return ResponseResult.okResult(pageVo);
 
     }

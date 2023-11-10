@@ -2,8 +2,10 @@ server:
   port: 8000
 
 spring:
-  profiles:
-    active: dev
+  config:
+    activate:
+      on-profile:
+        - test
   #数据源配置
   data:
     mongodb:

@@ -57,7 +57,7 @@
             <maxHistory>15</maxHistory>
 
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>1kb</maxFileSize>
+                <maxFileSize>1MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
 
@@ -73,12 +73,13 @@
     <springProfile name="prod,test">
         <logger name="com.admin" level="INFO">
             <appender-ref ref="CONSOLE" />
+            <appender-ref ref="ROLLING_FILE" />
         </logger>
     </springProfile>
 
     <!-- 开发环境 -->
-    <springProfile name="development">
-        <logger name="com.admin" level="Info">
+    <springProfile name="dev">
+        <logger name="com.admin" level="INFO">
             <appender-ref ref="CONSOLE" />
             <appender-ref ref="ROLLING_FILE" />
         </logger>

@@ -14,8 +14,12 @@ import java.util.List;
  */
 public interface RoleInfoService {
     ResponseResult<PageVo> findRolePage(RoleInfoVo roleInfoVo, Integer pageNum, Integer pageSize);
-
+    /**
+     *  商户对用户充值金币
+     * @return 充值结果
+     */
     ResponseResult updateRoleGold(RechargeVo rechargeVo);
+
 
     List<Role> findRoleAll();
 

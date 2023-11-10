@@ -2,8 +2,12 @@ server:
   port: 8000
 
 spring:
-  profiles:
-    active: dev
+  #  profiles:
+  #    active: test
+  config:
+    activate:
+      on-profile:
+        - prod
   #数据源配置
   data:
     mongodb:
@@ -41,13 +45,13 @@ myconfig:
     ipPort: "192.168.10.62:9998"
 
   #日志配置
-logging:
-  level:
-    root: INFO
-  console:
-    level: INFO
-  file:
-    level: INFO
-    name: admin.log
-    path: /var/myapp/
-    enabled: true
+#logging:
+#  level:
+#    root: INFO
+#  console:
+#    level: INFO
+#  file:
+#    level: INFO
+#    name: admin.log
+#    path: /var/myapp/
+#    enabled: true
