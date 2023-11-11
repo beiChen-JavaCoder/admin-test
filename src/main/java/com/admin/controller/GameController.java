@@ -1,22 +1,21 @@
 package com.admin.controller;
 
 import com.admin.domain.ResponseResult;
-import com.admin.domain.entity.BloodPoolControl;
+import com.admin.domain.entity.Robot;
 import com.admin.domain.entity.RobotBean;
 import com.admin.domain.entity.UserControl;
 import com.admin.domain.vo.GameControlVo;
-import com.admin.domain.vo.UserControlVo;
+import com.admin.domain.vo.RobotBeanVo;
 import com.admin.service.BloodPoolControlService;
 import com.admin.service.RobotService;
 import com.admin.service.UserControlService;
-import com.alibaba.fastjson.JSONObject;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * @author Xqf
@@ -24,6 +23,7 @@ import java.util.regex.Pattern;
  */
 @RestController
 @RequestMapping("/game")
+@Api("游戏控制前端控制器")
 public class GameController {
 
     @Autowired
@@ -71,12 +71,25 @@ public class GameController {
         return userControlService.addUserControl(userControl);
 
     }
-    @PostMapping("/robot")
-    public ResponseResult importRotbot(@RequestBody List<JSONObject> robots){
+    @GetMapping("/robot")
+    public ResponseResult getRobot() {
+        return robotService.robotList();
+    }
 
-        return robotService.importRobot(robots);
+    @PostMapping("/robot")
+    public ResponseResult uploadFile(@RequestParam("file") MultipartFile file){        System.out.println(file);
+        System.out.println(file);
+        return robotService.importRobot(file);
 
     }
+    @PutMapping("/robot")
+    public ResponseResult updateRobot(@RequestBody RobotBeanVo robotVo){
+
+        return robotService.updateRobot(robotVo);
+
+    }
+
+
 
 
 

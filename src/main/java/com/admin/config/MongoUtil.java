@@ -14,7 +14,6 @@ public class MongoUtil {
 
     private MongoTemplate gameTemplate;
 
-    private MongoTemplate merchantOrderTemplate;
 
     @Autowired
     private MongoClient mongoClient;
@@ -25,10 +24,7 @@ public class MongoUtil {
         }
         return gameTemplate;
     }
-    public  MongoTemplate getMerchantOrderTemplate() {
-        if (merchantOrderTemplate == null) {
-            merchantOrderTemplate = new MongoTemplate(mongoClient, "game");
-        }
-        return merchantOrderTemplate;
+    public MongoClient closeGameClient() {
+        return mongoClient;
     }
 }

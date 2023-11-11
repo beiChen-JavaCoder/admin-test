@@ -3,6 +3,7 @@ package com.admin.notification;
 import cn.hutool.http.HttpUtil;
 import com.admin.domain.dto.MerchantDto;
 import com.admin.enums.MerchantTypeEnum;
+import com.admin.utils.SecurityUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -13,6 +14,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 通知请求类
@@ -62,6 +64,14 @@ public class Notification {
      * 新增点控对象
      */
     private String POINT_CONTROL_ADD;
+    /**
+     * 机器人信息
+     */
+    private String ROBOT_INFO_GET;
+    /**
+     * 机器人信息更新
+     */
+    private String ROBOT_INFO_UPDATE;
 
 
     /**
@@ -101,7 +111,7 @@ public class Notification {
      * @return null
      */
     public ArrayList<JSONObject> getGameNotification() {
-        Object parse = JSONArray.parse(HttpUtil.post(GET_CONTROL_CONFIGS, ""));
+        Object parse = JSONArray.parse(HttpUtil.post(ROBOT_INFO_GET, ""));
 
         JSONArray jsonArray = JSONArray.parseArray(parse.toString());
         ArrayList<JSONObject> jsonObjects = new ArrayList<>();
@@ -185,6 +195,47 @@ public class Notification {
         return "1";
     }
 
+    /**
+     * 机器人列表请求
+     * @return
+     */
+    public List<JSONObject> getRobotList() {
+
+        Object parse = JSONArray.parse(HttpUtil.post(ROBOT_INFO_GET,""));
+
+        JSONArray jsonArray = JSONArray.parseArray(parse.toString());
+        ArrayList<JSONObject> jsonObjects = new ArrayList<>();
+        for (Object reGame : jsonArray) {
+            jsonObjects.add((JSONObject) reGame);
+        }
+        Long userId = SecurityUtils.getUserId();
+
+        if (StringUtils.hasText(parse.toString())) {
+
+            log.info("用户id:"+userId+"请求了机器人详情："+jsonObjects);
+            return jsonObjects;
+        }
+        log.info("用户id:"+userId+"请求失败机器人详情："+jsonObjects);
+        return null;
+
+
+    }
+
+    /**
+     * 修改机器人控制请求
+     * @param jsonObject
+     * @return
+     */
+    public String updateRobotControl(JSONObject jsonObject) {
+
+        String jsonString = JSON.toJSONString(jsonObject);
+        JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(ROBOT_INFO_UPDATE, jsonString));
+        if (0 == (Integer) parse.get("errcode")) {
+            return "0";
+        }
+        return "1";
+    }
+
     @PostConstruct
     public void init() {
         MERCHANT_LIST_CHANGE = "http://" + ipPort + "/hall/merchant/merchantListChange";
@@ -195,5 +246,7 @@ public class Notification {
         POINT_CONTROL_GET = "http://" + ipPort + "/control/getUserControlConfigs";
         POINT_CONTROL_UPDATE = "http://" + ipPort + "/control/updateUserControl";
         POINT_CONTROL_ADD = "http://" + ipPort + "/control/updateUserControl";
+        ROBOT_INFO_GET = "http://" + ipPort + "/robot/getRobotControls";
+        ROBOT_INFO_UPDATE = "http://" + ipPort + "/robot/update";
     }
 }

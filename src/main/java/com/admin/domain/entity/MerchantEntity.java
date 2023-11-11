@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import javax.persistence.Column;
 
 @Data
-@Document(collection = "sys_merchant")
+@Document(collection = "game_merchant")
 @EqualsAndHashCode(callSuper = false)
 public class MerchantEntity {
     @Id
