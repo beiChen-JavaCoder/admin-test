@@ -22,4 +22,10 @@ public interface BloodPoolControlService {
      */
     ResponseResult updateGame(GameControlVo game);
 
+    /**
+     * 定时器刷新分数
+     * @return
+     */
+    ResponseResult refreshScore();
+
 }

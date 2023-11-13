@@ -116,13 +116,13 @@
             <artifactId>knife4j-openapi2-spring-boot-starter</artifactId>
             <version>4.1.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <!-- 有人说optional一定要配置成true才有效, 但我调试完感觉不加optional也有效 -->
-            <optional>true</optional>
-            <scope>runtime</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-devtools</artifactId>-->
+<!--            &lt;!&ndash; 有人说optional一定要配置成true才有效, 但我调试完感觉不加optional也有效 &ndash;&gt;-->
+<!--            <optional>false</optional>-->
+<!--            <scope>runtime</scope>-->
+<!--        </dependency>-->
 
 
     </dependencies>

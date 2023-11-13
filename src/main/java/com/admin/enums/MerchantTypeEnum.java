@@ -7,6 +7,7 @@ import lombok.Getter;
  * @version 1.0
  */
 
+
 public enum MerchantTypeEnum {
 
     LIST(1,"商户列表变更"),

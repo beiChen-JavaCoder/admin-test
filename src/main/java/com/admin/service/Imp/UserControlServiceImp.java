@@ -30,12 +30,12 @@ public class UserControlServiceImp implements UserControlService {
 
     @Override
     public ResponseResult userControlList() {
-
+        Long userId = SecurityUtils.getUserId();
         List<JSONObject> controlScoreNotification = notification.getUserNotification();
         PageVo pageVo = new PageVo();
         pageVo.setRows(controlScoreNotification);
         pageVo.setTotal(Long.valueOf(controlScoreNotification.size()));
-        log.info("获取到点控控制台信息：" + pageVo);
+        log.info("用户id："+userId+"获取到点控控制台信息：" + pageVo);
         return ResponseResult.okResult(pageVo);
     }
 

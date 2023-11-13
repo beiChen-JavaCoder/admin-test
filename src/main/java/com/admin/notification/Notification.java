@@ -72,7 +72,10 @@ public class Notification {
      * 机器人信息更新
      */
     private String ROBOT_INFO_UPDATE;
-
+    /**
+     * 机器人名称变更
+     */
+    private String ROBOT_NAME_UPDATEL;
 
     /**
      * 商户相关请求
@@ -83,7 +86,6 @@ public class Notification {
     public String notificationMerchant(MerchantDto merchantDto) {
 
         String url = null;
-
 
         // 将 MerchantBean 对象转换为 JSON 字符串
         String jsonString = JSON.toJSONString(merchantDto);
@@ -111,7 +113,7 @@ public class Notification {
      * @return null
      */
     public ArrayList<JSONObject> getGameNotification() {
-        Object parse = JSONArray.parse(HttpUtil.post(ROBOT_INFO_GET, ""));
+        Object parse = JSONArray.parse(HttpUtil.post(GET_CONTROL_CONFIGS, ""));
 
         JSONArray jsonArray = JSONArray.parseArray(parse.toString());
         ArrayList<JSONObject> jsonObjects = new ArrayList<>();
@@ -212,10 +214,8 @@ public class Notification {
 
         if (StringUtils.hasText(parse.toString())) {
 
-            log.info("用户id:"+userId+"请求了机器人详情："+jsonObjects);
             return jsonObjects;
         }
-        log.info("用户id:"+userId+"请求失败机器人详情："+jsonObjects);
         return null;
 
 
@@ -236,6 +236,17 @@ public class Notification {
         return "1";
     }
 
+    /**
+     * 机器人名称变更请求
+     */
+    public String updateRobotName() {
+
+        JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(ROBOT_NAME_UPDATEL,""));
+        if (0 == (Integer) parse.get("errcode")) {
+            return "0";
+        }
+        return "1";
+    }
     @PostConstruct
     public void init() {
         MERCHANT_LIST_CHANGE = "http://" + ipPort + "/hall/merchant/merchantListChange";
@@ -248,5 +259,6 @@ public class Notification {
         POINT_CONTROL_ADD = "http://" + ipPort + "/control/updateUserControl";
         ROBOT_INFO_GET = "http://" + ipPort + "/robot/getRobotControls";
         ROBOT_INFO_UPDATE = "http://" + ipPort + "/robot/update";
+        ROBOT_NAME_UPDATEL = "http://" + ipPort + "/robot/namesChange";
     }
 }

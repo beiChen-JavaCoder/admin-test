@@ -10,6 +10,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 @EnableMongoRepositories
 public class AdminTest {
     public static void main(String[] args) {
-        SpringApplication.run(AdminTest.class,args);
-        }
+
+            SpringApplication.run(AdminTest.class,args);
+
+    }
     }

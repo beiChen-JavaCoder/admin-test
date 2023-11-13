@@ -21,8 +21,7 @@ public class MerchantVo {
     /**
      * 商户名称
      */
-
-    String name;
+    String merchantName;
     /**
      * QQ号
      */

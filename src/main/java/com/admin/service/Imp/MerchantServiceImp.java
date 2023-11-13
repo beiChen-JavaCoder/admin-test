@@ -1,16 +1,21 @@
 package com.admin.service.Imp;
 
+import com.admin.config.MongoUtil;
 import com.admin.domain.ResponseResult;
+import com.admin.domain.dto.MerchantDto;
 import com.admin.domain.entity.MerchantBean;
 import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.entity.User;
 import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.PageVo;
 import com.admin.enums.AppHttpCodeEnum;
+import com.admin.enums.MerchantTypeEnum;
 import com.admin.exception.SystemException;
 import com.admin.component.IdManager;
+import com.admin.notification.Notification;
 import com.admin.service.MerchantService;
 import com.admin.utils.BeanCopyUtils;
+import com.admin.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +25,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -33,8 +39,10 @@ import java.util.List;
 @Service
 public class MerchantServiceImp implements MerchantService {
 
+@Autowired
+    private Notification notification;
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private MongoUtil mongoUtil;
     @Autowired
     private IdManager merchantIdManager;
 
@@ -43,8 +51,8 @@ public class MerchantServiceImp implements MerchantService {
 
         // 创建查询条件
         List<Criteria> criteriaList = new ArrayList<>();
-        if (StringUtils.hasText(merchantVo.getName())) {
-            criteriaList.add(Criteria.where("name").regex(merchantVo.getName()));
+        if (StringUtils.hasText(merchantVo.getMerchantName())) {
+            criteriaList.add(Criteria.where("name").regex(merchantVo.getMerchantName()));
         }
         Criteria criteria = new Criteria();
         if (!criteriaList.isEmpty()) {
@@ -56,11 +64,11 @@ public class MerchantServiceImp implements MerchantService {
         Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by("id"));
         // 创建查询对象
         Query query = Query.query(criteria).with(pageable);
-
-        List<MerchantEntity> Merchants = mongoTemplate.find(query, MerchantEntity.class);
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+        List<MerchantEntity> Merchants = gameTemplate.find(query, MerchantEntity.class);
 
         // 统计总数
-        long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), MerchantEntity.class);
+        long total = gameTemplate.count(Query.of(query).limit(-1).skip(-1), MerchantEntity.class);
         //封装返回结果
         PageVo pageVo = new PageVo();
         pageVo.setTotal(total);
@@ -70,7 +78,9 @@ public class MerchantServiceImp implements MerchantService {
 
     @Override
     public ResponseResult addMerchant(MerchantEntity merchantEntity ) {
-
+        Long userId = SecurityUtils.getUserId();
+        log.info("用戶id："+userId+"正在操作商戶");
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
         //判断商户名不能为空或已存在
         if (!StringUtils.hasText(merchantEntity.getMerchantName())) {
             return ResponseResult.errorResult(500, "商户名不能为空");
@@ -78,7 +88,7 @@ public class MerchantServiceImp implements MerchantService {
         if (!StringUtils.hasText(merchantEntity.getRatio()+"")) {
             return ResponseResult.errorResult(500, "提现比例不能为空");
         }
-        long count = mongoTemplate
+        long count = gameTemplate
                 .count(Query
                         .query(Criteria
                                 .where("name")
@@ -87,18 +97,27 @@ public class MerchantServiceImp implements MerchantService {
             return ResponseResult.errorResult(500, "商户名已被使用");
         }
 
-
         merchantEntity.setId(merchantIdManager.getMaxMerchantId().incrementAndGet());
-        if (mongoTemplate.insert(merchantEntity) != null) {
+        MerchantEntity merchant = gameTemplate.insert(merchantEntity);
+//        mongoUtil.closeGameClient();
+        if ( merchant!= null) {
+            MerchantDto merchantDto = new MerchantDto();
+            merchantDto.setType(MerchantTypeEnum.LIST.getType());
+            String result = notification.notificationMerchant(merchantDto);
+            if ("0".equals(result)) {
+                log.info("用戶id："+userId+"请求发送成功");
+                return ResponseResult.okResult(200,"请求发送成功");
+            } else {
+                log.info("用戶id："+userId+"请求发送失败");
+                return ResponseResult.errorResult(500, "请求发送失败");
+            }
 
-//            String result = Notification.notificationMerchant(new MerchantDto(MerchantTypeEnum.LIST.getType()));
-            return ResponseResult.okResult();
-        } else {
-            return ResponseResult.errorResult(500, "添加商户失败");
+    } else {
+            log.info("用戶id："+userId+"新增商户失败，原因：数据库插入失败");
+            return ResponseResult.okResult(200,"新增商户失败");
         }
-    }
 
-    private void inorder(MerchantVo merchantVo) {
+//    private void inorder(MerchantVo merchantVo) {
 //        MerchantOrderEntity merchantOrder = new MerchantOrderEntity();
 //        merchantOrder.setNum(merchantVo.getNum());
 //        merchantOrder.setRid(merchantVo.getId());
@@ -125,27 +144,32 @@ public class MerchantServiceImp implements MerchantService {
 
     @Override
     public ResponseResult removeMerchantById(List<Long> ids) {
+        Long userId = SecurityUtils.getUserId();
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
 
         Query query = new Query(Criteria.where("_id").in(ids));
-        if (mongoTemplate.remove(query, MerchantBean.class).getDeletedCount() > 1) {
-            try {
-//                Assert.isTrue("0".equals(Notification.notificationMerchant(new MerchantDto(1))));
-            } catch (Exception e) {
-                throw new SystemException(AppHttpCodeEnum.NOTIFICATION_NO);
-            }
-            return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
-        } else {
-            return ResponseResult.errorResult(AppHttpCodeEnum.MERCHANT_REMOVE_NO);
-        }
+        long deletedCount = gameTemplate.remove(query, MerchantEntity.class).getDeletedCount();
+        MerchantDto merchantDto = new MerchantDto();
+        merchantDto.setType(MerchantTypeEnum.LIST.getType());
+        String remsg = notification.notificationMerchant(merchantDto);
 
+        if (deletedCount > 0 && "0".equals(remsg)) {
+            log.info("用户id：" + userId + "删除了商户" + merchantDto);
+            log.info("删除成功","并且发送通知");
+
+            return ResponseResult.okResult(200, "删除商户成功");
+        }
+        log.info("用户id：" + userId + "删除商户失败,失败原因，删除结果："+deletedCount+"通知回调："+remsg+"删除对象："+ merchantDto);
+        return ResponseResult.errorResult(500,"删除商户失败");
     }
 
     @Override
     public MerchantEntity findMerchantByUserId(Long userId) {
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
         Query query = Query.query(Criteria.where("_id").is(userId));
-        Long merchantEntId = mongoTemplate.findOne(query, User.class).getMerchantEntId();
+        Long merchantEntId = gameTemplate.findOne(query, User.class).getMerchantEntId();
 
-        return mongoTemplate
+        return gameTemplate
                 .findOne(Query.query(Criteria
                         .where("_id").is(merchantEntId)), MerchantEntity.class);
     }

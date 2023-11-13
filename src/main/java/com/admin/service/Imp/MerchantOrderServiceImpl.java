@@ -44,7 +44,7 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
 
     @Override
     public ResponseResult<PageVo> findOrderPage(MerchantOrderVo merchantOrderVo) {
-
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
         ArrayList<Criteria> criteriaList = new ArrayList<>();
         //创建查询条件
         if (!(merchantOrderVo.getRid() == null)) {
@@ -52,7 +52,7 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
         }
         //创建商户id查询条件
         Long userId = SecurityUtils.getUserId();
-        Long merchantEntId = Objects.requireNonNull(mongoTemplate.findById(userId, User.class), "用户不存在！").getMerchantEntId();
+        Long merchantEntId = Objects.requireNonNull(gameTemplate.findById(userId, User.class), "用户不存在！").getMerchantEntId();
         criteriaList.add(Criteria.where(("merchantId")).is(merchantEntId));
 //        if (StringUtils.hasText(merchantOrderVo.getVoucher())){
 //            criteriaList.add(Criteria.where("voucher"))
@@ -70,10 +70,10 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
         // 使用 MongoTemplate 执行查询：
 //        List<MerchantOrderEntity> merchantOrders = mongoTemplate.find(query, MerchantOrderEntity.class);
 
-        List<MerchantOrderEntity> merchantOrders = mongoUtil.getGameTemplate().find(query, MerchantOrderEntity.class);
+        List<MerchantOrderEntity> merchantOrders = gameTemplate.find(query, MerchantOrderEntity.class);
 
         //统计总数
-        long total = mongoUtil.getGameTemplate().count(query, MerchantOrderEntity.class);
+        long total = gameTemplate.count(query, MerchantOrderEntity.class);
 
         merchantOrders.forEach(merchantOrder -> {
             Integer status = merchantOrder.getStatus();
@@ -116,12 +116,12 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
 
     @Override
     public ResponseResult update(MerchantOrderEntity merchantOrder) {
-
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
         if (!(merchantOrder.getStatus() == MerchantOrderTypeEnum.UNTREATED.getType())) {
             return ResponseResult.errorResult(500, "订单已处理或已拒绝");
         }
 
-        if (mongoTemplate.save(merchantOrder) != null) {
+        if (gameTemplate.save(merchantOrder) != null) {
             //封装通知信息
             MerchantDto merchantDto = new MerchantDto();
             merchantDto.setType(MerchantTypeEnum.CASH.getType());

@@ -2,6 +2,7 @@ package com.admin.config;
 
 import com.mongodb.client.MongoClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
@@ -14,9 +15,9 @@ public class MongoUtil {
 
     private MongoTemplate gameTemplate;
 
-
     @Autowired
     private MongoClient mongoClient;
+
 
     public MongoTemplate getGameTemplate() {
         if (gameTemplate == null) {

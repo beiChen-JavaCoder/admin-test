@@ -25,7 +25,7 @@ public class RobotBeanVo {
 
     Long max;
 
-    Long gameId;
+    long gameId;
 
     int betRatio;
 }

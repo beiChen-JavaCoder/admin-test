@@ -1,5 +1,6 @@
 package com.admin.component;
 
+import com.admin.config.MongoUtil;
 import com.admin.domain.entity.Menu;
 import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.entity.Role;
@@ -34,11 +35,14 @@ public class IdManager {
 
     @Autowired
     MongoTemplate mongoTemplate;
+    @Autowired
+    MongoUtil mongoUtil;
 
     @PostConstruct
     void init() {
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
         Query queryMerchant = new Query().with(Sort.by(Sort.Direction.DESC, "_id")).limit(1);
-        MerchantEntity merchant = mongoTemplate.findOne(queryMerchant, MerchantEntity.class);
+        MerchantEntity merchant = gameTemplate.findOne(queryMerchant, MerchantEntity.class);
         if (merchant != null) {
             maxMerchantId.set(merchant.getId());
         }

@@ -56,41 +56,48 @@ public class GameController {
 
     }
 
+    @GetMapping("/blood/refresh")
+    public ResponseResult refreshScore(){
+        return bloodPoolControlService.refreshScore();
+    }
+
     @GetMapping("/p2p")
     public ResponseResult getPtp() {
         return userControlService.userControlList();
     }
+
     @PutMapping("/p2p")
     public ResponseResult updateGameUser(@RequestBody UserControl userControl) {
         return userControlService.updateUserControl(userControl);
 
     }
+
     @PostMapping("/p2p")
-    public ResponseResult addUserControl(@RequestBody UserControl userControl){
+    public ResponseResult addUserControl(@RequestBody UserControl userControl) {
 
         return userControlService.addUserControl(userControl);
 
     }
+
     @GetMapping("/robot")
     public ResponseResult getRobot() {
         return robotService.robotList();
     }
 
     @PostMapping("/robot")
-    public ResponseResult uploadFile(@RequestParam("file") MultipartFile file){        System.out.println(file);
+    public ResponseResult uploadFile(@RequestParam("file") MultipartFile file) {
+        System.out.println(file);
         System.out.println(file);
         return robotService.importRobot(file);
 
     }
+
     @PutMapping("/robot")
-    public ResponseResult updateRobot(@RequestBody RobotBeanVo robotVo){
+    public ResponseResult updateRobot(@RequestBody RobotBeanVo robotVo) {
 
         return robotService.updateRobot(robotVo);
 
     }
-
-
-
 
 
 }

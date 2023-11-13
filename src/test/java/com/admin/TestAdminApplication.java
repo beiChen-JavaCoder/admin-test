@@ -31,6 +31,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -185,7 +186,9 @@ public class TestAdminApplication {
         user.setUpdateTime(DateUtil.date());
         mongoTemplate.save(user);
     }
-private IdManager idManager;
+
+    private IdManager idManager;
+
     @Test
     @Transactional
     void testTransactional() {
@@ -203,28 +206,28 @@ private IdManager idManager;
         }
         mongoTemplate.insert(new UserRole());
     }
+
     @Test
-    void getScore(){
+    void getScore() {
 
 //        JSONArray jsonArray = Notification.getGameNotification().getJSONArray();
-        String controlScoreNotification = HttpUtil.post("http://192.168.10.62:9998/control/getControlConfigs","");
+        String controlScoreNotification = HttpUtil.post("http://192.168.10.62:9998/control/getControlConfigs", "");
         JSONArray objects = JSONArray.parseArray(controlScoreNotification);
         ArrayList<JSONObject> jsonObjects = new ArrayList<>();
         for (Object reGame : objects) {
             jsonObjects.add((JSONObject) reGame);
         }
     }
-    @Test
-    void zhengzebiaodashi(){
 
-        String regex = "^(?!0$)([1-9]\\d{0,3}|10000)$";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher("1000");
-        if (!matcher.matches()) {
-            log.error("匹配失败");
-        }else {
-            log.info("匹配成功");
-        }
+    @Test
+    void zhengzebiaodashi() {
+
+//        String input = "apple,banana,orange";
+//        String[] splits = input.split( "a");
+//        for (String s : splits) {
+//            log.info(s);
+//        }
+
     }
 
 }

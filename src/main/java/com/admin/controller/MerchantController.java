@@ -58,7 +58,6 @@ public class MerchantController {
     public ResponseResult addMerchant(@RequestBody MerchantVo merchantVo) {
 
         MerchantEntity merchantEntity = BeanCopyUtils.copyBean(merchantVo, MerchantEntity.class);
-
         return merchantService.addMerchant(merchantEntity);
     }
 }
