@@ -65,8 +65,8 @@ public class RoleInfoServiceImp implements RoleInfoService {
     public ResponseResult<PageVo> findRolePage(RoleInfoVo roleInfoVo, Integer pageNum, Integer pageSize) {
         // 创建查询条件
         List<Criteria> criteriaList = new ArrayList<>();
-        if (StringUtils.hasText(roleInfoVo.getUserName())) {
-            criteriaList.add(Criteria.where("userName").regex(roleInfoVo.getUserName()));
+        if (!(roleInfoVo.getId() ==null)) {
+            criteriaList.add(Criteria.where("_id").is(roleInfoVo.getId()));
         }
         Criteria criteria = new Criteria();
         if (!criteriaList.isEmpty()) {
@@ -100,7 +100,7 @@ public class RoleInfoServiceImp implements RoleInfoService {
         MerchantDto merchantDto = new MerchantDto();
         Long merchantEntId = mongoTemplate.findById(userId, User.class).getMerchantEntId();
         merchantDto.setMerchantId(merchantEntId);
-        merchantDto.setType(MerchantTypeEnum.CASH.getType());
+        merchantDto.setType(MerchantTypeEnum.CHARGE.getType());
         merchantDto.setChangeNum(rechargeVo.getNum());
         merchantDto.setUserId(rechargeVo.getRid());
         String reRecharge = notification.notificationMerchant(merchantDto);
@@ -109,7 +109,6 @@ public class RoleInfoServiceImp implements RoleInfoService {
                 return ResponseResult.okResult(200, "充值成功");
             } else {
                 return ResponseResult.errorResult(500, "充值失败");
-
             }
         } finally {
             log.info("商户" + merchantEntId + "对玩家" + merchantDto.getUserId() + "充值" + merchantDto.getChangeNum());

@@ -11,8 +11,18 @@ import com.admin.domain.vo.PageVo;
  */
 
 public interface MerchantOrderService {
+    /**
+     * 根据查询条件查询提现审核列表
+     * @param merchantOrderVo
+     * @return
+     */
     ResponseResult<PageVo> findOrderPage(MerchantOrderVo merchantOrderVo);
 
+    /**
+     * 提现审核
+     * @param merchantOrder
+     * @return
+     */
     ResponseResult update(MerchantOrderEntity merchantOrder);
 
 }

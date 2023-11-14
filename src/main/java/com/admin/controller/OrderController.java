@@ -30,7 +30,7 @@ public class OrderController {
         return merchantOrderService.findOrderPage(merchantOrderVo);
 
     }
-    @PostMapping
+    @PutMapping
     public ResponseResult update(@RequestBody MerchantOrderEntity merchantOrder){
 
         return merchantOrderService.update(merchantOrder);

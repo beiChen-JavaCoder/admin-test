@@ -15,7 +15,7 @@ public class RoleInfoVo {
     /**
      * 角色id
      */
-    private Integer id;
+    private Long id;
     /**
      * 用户名
      */

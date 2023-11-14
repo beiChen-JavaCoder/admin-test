@@ -36,8 +36,6 @@ public class RechargeController {
     public ResponseResult updateGold(@RequestBody RechargeVo rechargeVo) {
 
 
-
-
         return roleInfoService.updateRoleGold(rechargeVo);
 
     }

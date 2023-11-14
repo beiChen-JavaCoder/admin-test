@@ -7,14 +7,17 @@ import com.admin.notification.Notification;
 import com.admin.service.UserControlService;
 import com.admin.utils.SecurityUtils;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Xqf
@@ -32,6 +35,20 @@ public class UserControlServiceImp implements UserControlService {
     public ResponseResult userControlList() {
         Long userId = SecurityUtils.getUserId();
         List<JSONObject> controlScoreNotification = notification.getUserNotification();
+        // 对controlScoreNotification中的每个JSONObject对象进行处理
+        controlScoreNotification.forEach(game -> {
+            JSONArray userControls = game.getJSONArray("userControls"); // 假设内部数组的属性名为"yourArrayPropertyName"
+            if (userControls != null) {
+                List<JSONObject> sortedList = userControls.stream()
+                        .map(userControl -> (JSONObject) userControl) // 将JSONArray中的元素转换为JSONObject
+                        .sorted(Comparator.comparingLong(o -> o.getLong("time"))) // 按照时间属性排序
+                        .collect(Collectors.toList());
+
+                // 将排序后的列表重新放回原来的JSONObject对象中
+                game.put("userControls", sortedList);
+            }
+        });
+
         PageVo pageVo = new PageVo();
         pageVo.setRows(controlScoreNotification);
         pageVo.setTotal(Long.valueOf(controlScoreNotification.size()));

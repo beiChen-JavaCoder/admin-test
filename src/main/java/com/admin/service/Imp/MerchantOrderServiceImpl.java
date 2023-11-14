@@ -13,13 +13,16 @@ import com.admin.enums.OrderAccountTypeEnum;
 import com.admin.notification.Notification;
 import com.admin.service.MerchantOrderService;
 import com.admin.utils.SecurityUtils;
+import com.mongodb.client.result.UpdateResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,23 +43,28 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
 
     @Autowired
     private MongoUtil mongoUtil;
+    @Autowired
+    private Notification notification;
 
 
     @Override
     public ResponseResult<PageVo> findOrderPage(MerchantOrderVo merchantOrderVo) {
         MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
         ArrayList<Criteria> criteriaList = new ArrayList<>();
-        //创建查询条件
-        if (!(merchantOrderVo.getRid() == null)) {
-            criteriaList.add(Criteria.where("rid").is(merchantOrderVo.getRid()));
+        //搜索查询条件判断
+        if (merchantOrderVo.getRid() != null) {
+            criteriaList.add(Criteria.where(("rid")).is(merchantOrderVo.getRid()));
         }
+
+
         //创建商户id查询条件
         Long userId = SecurityUtils.getUserId();
-        Long merchantEntId = Objects.requireNonNull(gameTemplate.findById(userId, User.class), "用户不存在！").getMerchantEntId();
-        criteriaList.add(Criteria.where(("merchantId")).is(merchantEntId));
-//        if (StringUtils.hasText(merchantOrderVo.getVoucher())){
-//            criteriaList.add(Criteria.where("voucher"))
-//        }
+        Long merchantEntId = Objects.requireNonNull(mongoTemplate.findById(userId, User.class), "用户不存在！").getMerchantEntId();
+        if (!(merchantEntId == null)) {
+            criteriaList.add(Criteria.where(("merchantId")).is(merchantEntId));
+        }
+        //状态为未处理参数返回
+        criteriaList.add(Criteria.where(("status")).is(MerchantOrderTypeEnum.UNTREATED.getType()));
         Criteria criteria = new Criteria();
         if (!criteriaList.isEmpty()) {
             criteria.andOperator(criteriaList.toArray(new Criteria[0]));
@@ -116,12 +124,27 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
 
     @Override
     public ResponseResult update(MerchantOrderEntity merchantOrder) {
+        Long userId = SecurityUtils.getUserId();
+
         MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
         if (!(merchantOrder.getStatus() == MerchantOrderTypeEnum.UNTREATED.getType())) {
             return ResponseResult.errorResult(500, "订单已处理或已拒绝");
         }
 
-        if (gameTemplate.save(merchantOrder) != null) {
+        //改变订单状态(订单处于已处理状态)
+        // 创建查询条件
+        Criteria criteria = Criteria.where("_id").is(merchantOrder.getId());
+        // 创建更新操作
+        Update update = new Update();
+        MerchantOrderTypeEnum processed = MerchantOrderTypeEnum.processed;
+        update.set("status",processed.getType())
+                .set("remarks",processed.getMsg());
+        // 执行更新操作
+        UpdateResult updateResult = gameTemplate
+                .updateFirst(Query
+                        .query(criteria), update, MerchantOrderEntity.class);
+        if (updateResult.wasAcknowledged()) {
+            log.info("用户"+ userId+"审核订单："+merchantOrder+"审核通过");
             //封装通知信息
             MerchantDto merchantDto = new MerchantDto();
             merchantDto.setType(MerchantTypeEnum.CASH.getType());
@@ -129,15 +152,17 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
             merchantDto.setChangeNum(merchantOrder.getNum());
             merchantDto.setUserId(merchantOrder.getRid());
             merchantDto.setOderId(merchantOrder.getId());
-//            String reCode = notification.notificationMerchant(merchantDto);
-//            if ("1".equals(reCode)) {
-//                //返回1通知失败
-//                return ResponseResult.errorResult(500, " 通知失败");
-//
-//            }
-            return ResponseResult.okResult(200, "审核提交完成");
+            String reCode = notification.notificationMerchant(merchantDto);
+            if ("1".equals(reCode)) {
+                //返回1通知失败
+                log.info("用户"+ userId+"审核玩家id："+merchantOrder.getRid()+"的提现订单，通知失败");
+                return ResponseResult.errorResult(500, " 通知失败");
+            }
+            log.info("用户"+ userId+"审核了玩家id："+merchantOrder.getRid()+"的提现订单");
+            return ResponseResult.okResult(200, "审核提交通过");
         }
-        return ResponseResult.errorResult(500, "审核提交失败");
+        log.info("用户"+ userId+"审核了玩家id："+merchantOrder.getRid()+"的提现订单，审核提交未通过");
+        return ResponseResult.errorResult(500, "审核提交未通过");
 
 
     }

@@ -250,7 +250,7 @@ public class Notification {
     @PostConstruct
     public void init() {
         MERCHANT_LIST_CHANGE = "http://" + ipPort + "/hall/merchant/merchantListChange";
-        MERCHANT_RECHARGE_CHANGE = "http://" + ipPort + "hall/merchant/recharge";
+        MERCHANT_RECHARGE_CHANGE = "http://" + ipPort + "/hall/merchant/recharge";
         MERCHANT_CASH_CHANGE = "http://" + ipPort + "/hall/merchant/cash";
         GET_CONTROL_CONFIGS = "http://" + ipPort + "/control/getControlConfigs";
         UPDATE_BLOOD_CONTROL = "http://" + ipPort + "/control/updateBloodControl";
