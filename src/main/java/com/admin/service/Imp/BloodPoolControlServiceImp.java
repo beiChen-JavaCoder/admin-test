@@ -54,7 +54,6 @@ public class BloodPoolControlServiceImp implements BloodPoolControlService {
 
         JSONObject controlGameType = new JSONObject();
 
-
         JSONObject controlGame = (JSONObject) gameControlVo.getGame();
 
         Integer controlType = gameControlVo.getType();

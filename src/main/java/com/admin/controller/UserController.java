@@ -39,7 +39,6 @@ public class UserController {
      */
     @GetMapping("/list")
     public ResponseResult list(User user, Integer pageNum, Integer pageSize) {
-        System.out.println(user);
         return userService.findUserPage(user, pageNum, pageSize);
     }
 

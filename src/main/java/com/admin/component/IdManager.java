@@ -5,7 +5,6 @@ import com.admin.domain.entity.Menu;
 import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.entity.Role;
 import com.admin.domain.entity.User;
-import lombok.Data;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;

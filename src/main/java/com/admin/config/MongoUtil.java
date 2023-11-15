@@ -28,4 +28,5 @@ public class MongoUtil {
     public MongoClient closeGameClient() {
         return mongoClient;
     }
+    private MongoUtil(){}
 }

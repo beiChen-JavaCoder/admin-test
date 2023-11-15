@@ -16,13 +16,14 @@ import com.admin.utils.SecurityUtils;
 import com.mongodb.client.result.UpdateResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,13 +51,14 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
     @Override
     public ResponseResult<PageVo> findOrderPage(MerchantOrderVo merchantOrderVo) {
         MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+        //处理已过期的提现订单
+        expiredProcessing();
+
         ArrayList<Criteria> criteriaList = new ArrayList<>();
         //搜索查询条件判断
         if (merchantOrderVo.getRid() != null) {
             criteriaList.add(Criteria.where(("rid")).is(merchantOrderVo.getRid()));
         }
-
-
         //创建商户id查询条件
         Long userId = SecurityUtils.getUserId();
         Long merchantEntId = Objects.requireNonNull(mongoTemplate.findById(userId, User.class), "用户不存在！").getMerchantEntId();
@@ -69,8 +71,8 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
         if (!criteriaList.isEmpty()) {
             criteria.andOperator(criteriaList.toArray(new Criteria[0]));
         }
-        // 创建分页请求和排序，默认按_id升序
-        Pageable pageable = PageRequest.of(merchantOrderVo.getPageNum() - 1, merchantOrderVo.getPageSize(), Sort.by("id"));
+        // 创建分页请求和排序，默认按创建时间降序
+        Pageable pageable = PageRequest.of(merchantOrderVo.getPageNum() - 1, merchantOrderVo.getPageSize(), Sort.by(Sort.Direction.DESC,"createTime"));
 
         // 创建查询对象
         Query query = Query.query(criteria).with(pageable);
@@ -124,9 +126,9 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
 
     @Override
     public ResponseResult update(MerchantOrderEntity merchantOrder) {
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
         Long userId = SecurityUtils.getUserId();
 
-        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
         if (!(merchantOrder.getStatus() == MerchantOrderTypeEnum.UNTREATED.getType())) {
             return ResponseResult.errorResult(500, "订单已处理或已拒绝");
         }
@@ -164,6 +166,33 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
         log.info("用户"+ userId+"审核了玩家id："+merchantOrder.getRid()+"的提现订单，审核提交未通过");
         return ResponseResult.errorResult(500, "审核提交未通过");
 
+
+    }
+
+    /**
+     * 更新数据库中已过期的提现订单
+     */
+    private void expiredProcessing(){
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+        Query query = new Query();
+        //当前时间戳
+        long currentTime = System.currentTimeMillis();
+        //查询已过期条件
+        query.addCriteria(Criteria.where("timeOut").lte(currentTime));
+        //排除已经处理的数据
+        query.addCriteria(Criteria.where("status").is(MerchantOrderTypeEnum.processed.getType()));
+        Update update = new Update();
+        //已过期提现变更状态
+        update.set("status",MerchantOrderTypeEnum.PROCESSING_TIMEOUT.getType());
+        //变更备注信息
+        update.set("remarks",MerchantOrderTypeEnum.PROCESSING_TIMEOUT.getMsg());
+        UpdateResult updateResult = gameTemplate.updateMulti(query, update, MerchantOrderEntity.class);
+
+        if (updateResult.wasAcknowledged()){
+            //成功确认更新
+            log.info("系统更新了数据库中已过期的提现订单,匹配到的数据："+updateResult.getMatchedCount());
+            log.info("系统更新了数据库中已过期的提现订单，实际被修改的文档数量："+updateResult.getModifiedCount());
+        }
 
     }
 }

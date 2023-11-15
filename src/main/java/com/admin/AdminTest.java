@@ -11,7 +11,11 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 public class AdminTest {
     public static void main(String[] args) {
 
+        try {
             SpringApplication.run(AdminTest.class,args);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
     }
     }

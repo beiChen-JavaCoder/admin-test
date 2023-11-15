@@ -1,6 +1,7 @@
 package com.admin.service;
 
 import com.admin.domain.ResponseResult;
+import com.admin.domain.vo.QueryParamsVo;
 import com.admin.domain.vo.RobotBeanVo;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,10 +18,10 @@ public interface RobotService {
      ResponseResult importRobot(MultipartFile file);
 
     /**
-     * 查询机器人详情信息
+     * 查询机器人控制台详情信息
      * @return
      */
-    ResponseResult robotList();
+    ResponseResult robotControlList();
 
     /**
      * 修改机器人控制请求
@@ -28,4 +29,10 @@ public interface RobotService {
      * @return
      */
     ResponseResult updateRobot(RobotBeanVo robot);
+
+    /**
+     * 获取机器人名称(分页)
+     * @return
+     */
+    ResponseResult findRobotPage(Integer pageNum,Integer pageSize);
 }
