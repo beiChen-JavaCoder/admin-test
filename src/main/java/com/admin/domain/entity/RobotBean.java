@@ -1,5 +1,6 @@
 package com.admin.domain.entity;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
  * 机器人控制变更地址:/robot/update 本实例
  */
 @Data
+@ApiModel("机器人控制台实体")
 public class RobotBean {
     public enum Type {
         /** 机器人初始金币区间 */

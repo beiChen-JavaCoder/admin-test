@@ -1,6 +1,7 @@
 package com.admin.service;
 
 import com.admin.domain.ResponseResult;
+import com.admin.domain.entity.Robot;
 import com.admin.domain.vo.QueryParamsVo;
 import com.admin.domain.vo.RobotBeanVo;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,4 +36,11 @@ public interface RobotService {
      * @return
      */
     ResponseResult findRobotPage(Integer pageNum,Integer pageSize);
+
+    /**
+     * 修改机器人名称
+     * @param robot
+     * @return
+     */
+    ResponseResult updateRobotName(Robot robot);
 }

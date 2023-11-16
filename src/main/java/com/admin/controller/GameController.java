@@ -14,6 +14,7 @@ import com.admin.service.UserControlService;
 import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +33,7 @@ import java.util.regex.Pattern;
 @RestController
 @RequestMapping("/game")
 @Api("游戏控制前端控制器")
+@Slf4j
 public class GameController {
 
     @Autowired
@@ -107,8 +110,8 @@ public class GameController {
     @PostMapping("/robot")
     @ApiOperation("上传机器人（robotName）")
     public ResponseResult uploadFile(@RequestParam("file") MultipartFile file) {
-        System.out.println(file);
-        System.out.println(file);
+
+
         return robotService.importRobot(file);
 
     }
@@ -123,6 +126,11 @@ public class GameController {
     @ApiOperation("机器人名称列表")
     public ResponseResult getRobotList(Integer pageNum,Integer pageSize) {
         return robotService.findRobotPage(pageNum,pageSize);
+    }
+    @PostMapping("/robot/update")
+    @ApiOperation("修改机器人信息")
+    public ResponseResult updateRobotName(Robot robot){
+        return robotService.updateRobotName(robot);
     }
 
 
@@ -174,6 +182,5 @@ public class GameController {
         }
         return ResponseResult.okResult(200,"验证通过");
     }
-
 
 }

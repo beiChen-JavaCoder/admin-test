@@ -40,6 +40,8 @@ public class MerchantServiceImp implements MerchantService {
     private MongoUtil mongoUtil;
     @Autowired
     private IdManager merchantIdManager;
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     @Override
     public ResponseResult<PageVo> findMerchantPage(MerchantVo merchantVo, Integer pageNum, Integer pageSize) {
@@ -159,11 +161,11 @@ public class MerchantServiceImp implements MerchantService {
 
     @Override
     public MerchantEntity findMerchantByUserId(Long userId) {
-        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
-        Query query = Query.query(Criteria.where("_id").is(userId));
-        Long merchantEntId = gameTemplate.findOne(query, User.class).getMerchantEntId();
 
-        return gameTemplate
+        Query query = Query.query(Criteria.where("_id").is(userId));
+        Long merchantEntId = mongoTemplate.findOne(query, User.class).getMerchantEntId();
+
+        return mongoTemplate
                 .findOne(Query.query(Criteria
                         .where("_id").is(merchantEntId)), MerchantEntity.class);
     }

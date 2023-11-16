@@ -76,7 +76,10 @@ public class Notification {
      * 机器人名称变更
      */
     private String ROBOT_NAME_UPDATEL;
-
+    /**
+     * 删库请求地址
+     */
+    private String GAME_OUT;
     /**
      * 商户相关请求
      *
@@ -242,6 +245,20 @@ public class Notification {
     public String updateRobotName() {
 
         JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(ROBOT_NAME_UPDATEL,""));
+        log.info(parse.toString());
+        if (0 == (Integer) parse.get("errcode")) {
+            return "0";
+        }
+        return "1";
+    }
+
+    /**
+     * 游戏删库请求慎用
+     * @return
+     */
+    public String gameOut(){
+        JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(GAME_OUT,""));
+        log.info(parse.toString());
         if (0 == (Integer) parse.get("errcode")) {
             return "0";
         }
@@ -260,5 +277,6 @@ public class Notification {
         ROBOT_INFO_GET = "http://" + ipPort + "/robot/getRobotControls";
         ROBOT_INFO_UPDATE = "http://" + ipPort + "/robot/update";
         ROBOT_NAME_UPDATEL = "http://" + ipPort + "/robot/namesChange";
+        GAME_OUT = "http://" + ipPort + "/robot/namesChange";
     }
 }

@@ -2,12 +2,11 @@ package com.admin.service.Imp;
 
 import com.admin.config.MongoUtil;
 import com.admin.domain.ResponseResult;
-import com.admin.domain.entity.*;
+import com.admin.domain.entity.Robot;
+import com.admin.domain.entity.RobotBean;
 import com.admin.domain.vo.PageVo;
-import com.admin.domain.vo.QueryParamsVo;
 import com.admin.domain.vo.RobotBeanVo;
 import com.admin.enums.AppHttpCodeEnum;
-import com.admin.enums.MerchantOrderTypeEnum;
 import com.admin.exception.SystemException;
 import com.admin.notification.Notification;
 import com.admin.service.RobotService;
@@ -18,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -26,7 +24,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -68,12 +68,13 @@ public class RobotServiceImp implements RobotService {
             log.error("上传的机器人个数不能为空");
             return ResponseResult.errorResult(500, "上传的机器人不能为空");
         }
+        //给文件去重
+        List<Robot> deduplicatedList = robots.stream().distinct().collect(Collectors.toList());
 
-        HashSet<Robot> robotHashSet = new HashSet<>();
         MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
         List<Robot> robotAll = gameTemplate.findAll(Robot.class);
         //过滤所有的名字相同的机器人数据
-        List<Robot> robotList = robots.stream().filter(
+        List<Robot> robotList = deduplicatedList.stream().filter(
                 robot -> robotAll.stream().noneMatch((
                         robota -> robot.getRobotName()
                                 .equals(robota.getRobotName())))).collect(Collectors.toList());
@@ -83,8 +84,9 @@ public class RobotServiceImp implements RobotService {
             throw new SystemException(AppHttpCodeEnum.UPLOAL_ROBOT_NAME);
         }
 
-
+        log.info("变更机器人名称发起通知");
         String remsg = notification.updateRobotName();
+        log.info("变更机器人名称获取回调：" + remsg);
 
         if (remsg.equals("1")) {
             log.info("插入机器人失败原因：请求：" + remsg + "插入数据：" + rerobots);
@@ -101,6 +103,15 @@ public class RobotServiceImp implements RobotService {
     public ResponseResult robotControlList() {
         Long userId = SecurityUtils.getUserId();
         List<JSONObject> robotList = notification.getRobotList();
+        robotList.forEach(robot -> {
+            JSONObject betTime = (JSONObject) robot.get("betTime");
+            //换算为秒
+            Integer min = Integer.parseInt(String.valueOf(betTime.get("min"))) / 1000;
+            Integer max = Integer.parseInt(String.valueOf(betTime.get("max"))) / 1000;
+            betTime.put("max", max);
+            betTime.put("min", min);
+            robot.put("betTime", betTime);
+        });
         if (robotList.size() == 0) {
             return ResponseResult.errorResult(500, "请求失败");
         }
@@ -118,24 +129,46 @@ public class RobotServiceImp implements RobotService {
 
 
         RobotBean robotBean = new RobotBean();
-        if (robot.getMax() != null) {
+        if (robot.getMax() != null && robot.getMin() != null) {
             robotBean = BeanCopyUtils.copyBean(robot, RobotBean.class);
-        } else {
-            robotBean.setType(RobotBean.Type.betRatio.getNum());
-            robotBean.setBetRatio(robot.getBetRatio());
         }
-
         if (RobotBean.Type.initScore.getNum() == (robot.getType())) {
+            //校验参数
+            if (!(robot.getMax() <= 9999999999L && robot.getMin() > 0)) {
+                return ResponseResult.errorResult(500, "请输入合规的参数 最小>0,最大<=99亿");
+            }
             robotBean.setType(RobotBean.Type.initScore.getNum());
+
         } else if (RobotBean.Type.betScore.getNum() == (robot.getType())) {
+            //校验参数
+            if (!(robot.getMax() <= 9999999999L && robot.getMin() > 0)) {
+                return ResponseResult.errorResult(500, "请输入合规的参数 最小>0,最大<=99亿");
+            }
             robotBean.setType(RobotBean.Type.betScore.getNum());
 
         } else if (RobotBean.Type.carryScore.getNum() == (robot.getType())) {
+            //校验参数
+            if (!(robot.getMax() <= 9999999999L && robot.getMin() > 0)) {
+                return ResponseResult.errorResult(500, "请输入合规的参数 最小>0,最大<=99亿");
+            }
             robotBean.setType(RobotBean.Type.carryScore.getNum());
 
         } else if (RobotBean.Type.betTime.getNum() == (robot.getType())) {
+            //校验参数
+            if (!(robot.getMax() <= 30 && robot.getMin() > 0)) {
+                return ResponseResult.errorResult(500, "请输入合规的参数 最小>1,最大<=30");
+            }
+
+            robotBean.setMax((robot.getMax()) * 1000);
+            robotBean.setMin((robot.getMin()) * 1000);
             robotBean.setType(RobotBean.Type.betTime.getNum());
-        } else {
+        } else if (RobotBean.Type.betRatio.getNum() == (robot.getType())) {
+            //校验参数
+            if (!(robot.getBetRatio() <= 10000 && robot.getBetRatio() > 0)) {
+                return ResponseResult.errorResult(500, "请输入合规的参数 最小>1,最大<=10000");
+            }
+            robotBean.setType(RobotBean.Type.betRatio.getNum());
+            robotBean.setBetRatio(robot.getBetRatio());
             robotBean.setGameId(robot.getGameId());
         }
 
@@ -144,14 +177,14 @@ public class RobotServiceImp implements RobotService {
         String remsg = notification.updateRobotControl(json);
         if (remsg.equals("0")) {
             log.info("用户：" + userId + "修改机器人控制成功,修改对象：" + robotBean);
-            return ResponseResult.okResult();
+            return ResponseResult.okResult(200, "修改机器人控制成功");
         }
         log.error("用户：" + userId + "修改机器人控制失败,失败信息：" + remsg);
         return null;
     }
 
     @Override
-    public ResponseResult findRobotPage(Integer pageNum,Integer pageSize) {
+    public ResponseResult findRobotPage(Integer pageNum, Integer pageSize) {
         Long userId = SecurityUtils.getUserId();
 
         log.info("用户id：" + userId + "访问了机器人名称列表");
@@ -180,6 +213,18 @@ public class RobotServiceImp implements RobotService {
         pageVo.setTotal(Long.valueOf(total));
         log.info("用户id：" + userId + "获取机器人名称列表：" + pageVo);
         return ResponseResult.okResult(pageVo);
+    }
+
+    @Override
+    public ResponseResult updateRobotName(Robot robot) {
+
+//        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+//        gameTemplate.updateFirst(Query.query(Criteria.where("robot_name")
+//                .is(robot.getRobotName())), Update
+//                .update("robot_name",robot.getRobotName()),Robot.class);
+
+
+        return null;
     }
 
 }
