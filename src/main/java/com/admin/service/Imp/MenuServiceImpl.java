@@ -108,7 +108,6 @@ public class MenuServiceImpl implements MenuService {
         //添加排序条件 根据 parentId 和 orderNum 进行升序排序
         query.with(Sort.by(Sort.Order.asc("parent_id"), Sort.Order.asc("order_num")));
         //执行查询
-        String string = mongoTemplate.find(query, Menu.class).toString();
         List<Menu> menus = mongoTemplate.find(query, Menu.class);
         return menus;
 

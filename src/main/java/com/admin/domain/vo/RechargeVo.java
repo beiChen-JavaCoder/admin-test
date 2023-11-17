@@ -28,7 +28,7 @@ public class RechargeVo {
     /**
      * 玩家昵称
      */
-    private String rolename;
+    private String roleName;
     /**
      * 修改金币数量
      */

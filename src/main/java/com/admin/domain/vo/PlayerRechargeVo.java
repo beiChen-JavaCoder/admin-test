@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoleInfoVo {
+public class PlayerRechargeVo {
     /**
      * 角色id
      */

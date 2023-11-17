@@ -2,10 +2,10 @@ package com.admin.controller;
 
 import com.admin.domain.ResponseResult;
 import com.admin.domain.vo.PageVo;
+import com.admin.domain.vo.QueryParamsVo;
 import com.admin.domain.vo.RechargeVo;
-import com.admin.domain.vo.RoleInfoVo;
-import com.admin.service.RoleInfoService;
-import com.admin.utils.SecurityUtils;
+import com.admin.domain.vo.PlayerRechargeVo;
+import com.admin.service.PlayerService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +21,14 @@ import org.springframework.web.bind.annotation.*;
 public class RechargeController {
 
     @Autowired
-    private RoleInfoService roleInfoService;
+    private PlayerService playerService;
 
 
     @GetMapping("/list")
     @ApiOperation(value = "角色列表")
-    public ResponseResult<PageVo> getRoleList(RoleInfoVo roleInfoVo, Integer pageNum, Integer pageSize) {
+    public ResponseResult<PageVo> getRoleList(PlayerRechargeVo playerRechargeVo,Integer pageNum,Integer pageSize) {
 
-        return roleInfoService.findRolePage(roleInfoVo, pageNum, pageSize);
+        return playerService.findPlayerRechargePage(playerRechargeVo,pageNum,pageSize);
     }
 
     @PostMapping("/updateGold")
@@ -36,7 +36,7 @@ public class RechargeController {
     public ResponseResult updateGold(@RequestBody RechargeVo rechargeVo) {
 
 
-        return roleInfoService.updateRoleGold(rechargeVo);
+        return playerService.updateRoleGold(rechargeVo);
 
     }
 

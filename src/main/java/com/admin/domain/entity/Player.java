@@ -14,13 +14,12 @@ import javax.persistence.Column;
 @Data
 @Document(collection = "tb_roleinfo")
 @EqualsAndHashCode(callSuper = false)
-public class GameRole{
+public class Player {
 
     @Id
     @javax.persistence.Id
 //    @Indexed(unique = true, name = "rid_index")
     private long rid;
-
 
     @Column(name = "user_name")
     private String userName;

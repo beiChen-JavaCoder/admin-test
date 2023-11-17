@@ -4,6 +4,7 @@ import com.admin.config.MongoUtil;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.dto.MerchantDto;
 import com.admin.domain.entity.MerchantOrderEntity;
+import com.admin.domain.entity.Player;
 import com.admin.domain.entity.User;
 import com.admin.domain.vo.MerchantOrderVo;
 import com.admin.domain.vo.PageVo;
@@ -83,7 +84,7 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
         List<MerchantOrderEntity> merchantOrders = gameTemplate.find(query, MerchantOrderEntity.class);
 
         //统计总数
-        long total = gameTemplate.count(query, MerchantOrderEntity.class);
+        long total = gameTemplate.count(Query.of(query).limit(-1).skip(-1), MerchantOrderEntity.class);
 
         merchantOrders.forEach(merchantOrder -> {
             Integer status = merchantOrder.getStatus();
@@ -180,7 +181,7 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
         //查询已过期条件
         query.addCriteria(Criteria.where("timeOut").lte(currentTime));
         //排除已经处理的数据
-        query.addCriteria(Criteria.where("status").is(MerchantOrderTypeEnum.processed.getType()));
+        query.addCriteria(Criteria.where("status").is(MerchantOrderTypeEnum.UNTREATED.getType()));
         Update update = new Update();
         //已过期提现变更状态
         update.set("status",MerchantOrderTypeEnum.PROCESSING_TIMEOUT.getType());

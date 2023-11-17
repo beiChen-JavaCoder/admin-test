@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import javax.persistence.Column;
 
 /**
  * @author Xqf
@@ -14,14 +14,13 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class QueryParamsVo {
-
+public class PlayerQueryVo {
     //玩家id
     private long rid;
     //注册时间
-    private String[] regTime;
+    private String regTime;
     //最后登陆时间
-    private String[] lastlogin_time;
+    private String lastlogin_time;
     //金币范围
     private JSONObject gold;
     //输赢区间
@@ -29,7 +28,4 @@ public class QueryParamsVo {
     //注册时间
     private JSONObject recharge;
 
-    private Integer pageNum;
-
-    private Integer pageSize;
 }
