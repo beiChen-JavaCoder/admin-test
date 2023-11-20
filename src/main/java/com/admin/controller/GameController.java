@@ -2,10 +2,8 @@ package com.admin.controller;
 
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.Robot;
-import com.admin.domain.entity.RobotBean;
 import com.admin.domain.entity.UserControl;
 import com.admin.domain.vo.GameControlVo;
-import com.admin.domain.vo.QueryParamsVo;
 import com.admin.domain.vo.RobotBeanVo;
 import com.admin.enums.GameControlTypeEnum;
 import com.admin.service.BloodPoolControlService;
@@ -15,14 +13,10 @@ import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.annotations.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

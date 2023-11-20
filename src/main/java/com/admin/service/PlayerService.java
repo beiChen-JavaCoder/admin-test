@@ -1,10 +1,7 @@
 package com.admin.service;
 
 import com.admin.domain.ResponseResult;
-import com.admin.domain.vo.PageVo;
-import com.admin.domain.vo.QueryParamsVo;
-import com.admin.domain.vo.RechargeVo;
-import com.admin.domain.vo.PlayerRechargeVo;
+import com.admin.domain.vo.*;
 
 /**
  * @author Xqf
@@ -29,7 +26,12 @@ public interface PlayerService {
      * @param queryParamsVo
      * @return
      */
-    ResponseResult findPlayerPage(QueryParamsVo queryParamsVo);
+    ResponseResult findPlayerPage(PlayerVo queryParamsVo);
 
+    /**
+     * 玩家流水列表
+     * @return
+     */
+    ResponseResult findFlowPage(QueryParamsVo queryParamsVo);
 
 }

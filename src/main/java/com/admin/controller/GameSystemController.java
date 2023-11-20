@@ -1,12 +1,15 @@
 package com.admin.controller;
 
 import com.admin.domain.ResponseResult;
+import com.admin.domain.vo.QueryParamsVo;
 import com.admin.notification.Notification;
+import com.admin.service.GameService;
+import com.admin.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author Xqf
@@ -17,22 +20,30 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class GameSystemController {
 
+
     @Autowired
-    private Notification notification;
+    private GameService gameService;
 
     /**
      * 删库（游戏）接口
      * @return
      */
-    @DeleteMapping
-    public ResponseResult gameOut() {
+    @GetMapping("{gameIds}")
+    public ResponseResult downlineGame(@PathVariable List<Long> gameIds) {
 
-        log.info("管理员:1正在执行删除游戏数据库操作,请谨慎操作");
-//        if (SecurityUtils.isAdmin()) {
-//            notification.gameOut();
-//        }
-
+        log.info("管理员:1正在对游戏"+gameIds.toString()+"执行下线操作,请谨慎操作");
+        if (SecurityUtils.isAdmin()) {
+        return gameService.downlineGame();
+        }
         return ResponseResult.okResult();
+    }
+    @PostMapping
+    public ResponseResult getList(@RequestBody QueryParamsVo queryParamsVo){
+
+
+        return gameService.findGamePage(queryParamsVo);
+
+
     }
 
 

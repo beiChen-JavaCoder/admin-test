@@ -1,7 +1,7 @@
 package com.admin.controller;
 
 import com.admin.domain.ResponseResult;
-import com.admin.domain.vo.PlayerRechargeVo;
+import com.admin.domain.vo.PlayerVo;
 import com.admin.domain.vo.QueryParamsVo;
 import com.admin.service.PlayerService;
 import io.swagger.annotations.Api;
@@ -18,15 +18,18 @@ import org.springframework.web.bind.annotation.*;
 public class PlayerController {
 
 
-@Autowired
-private PlayerService playerService;
+    @Autowired
+    private PlayerService playerService;
 
     @PostMapping("/list")
-    public ResponseResult getList( @RequestBody QueryParamsVo queryParamsVo){
-        return playerService.findPlayerPage(queryParamsVo) ;
+    public ResponseResult getList(@RequestBody PlayerVo queryParamsVo) {
+        return playerService.findPlayerPage(queryParamsVo);
     }
 
-
+    @PostMapping("/flow")
+    public ResponseResult getFlow(@RequestBody QueryParamsVo queryParamsVo) {
+        return playerService.findFlowPage(queryParamsVo);
+     }
 
 
 }

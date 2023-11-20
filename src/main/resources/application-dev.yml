@@ -33,7 +33,8 @@ spring:
       additional-paths: src/main/java
       #排除那个目录的文件不需要restart
       exclude: static/**,public/**
-
+  jackson:
+    time-zone: GMT+8
 
 
 

@@ -1,35 +1,41 @@
 package com.admin.domain.vo;
 
-import com.alibaba.fastjson.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * @author Xqf
- * @version 1.0
+ * 前端参数Vo
  */
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class QueryParamsVo {
+    private Map<String, String> attributes;
+    private Map<String, Object> objects;
 
-    //玩家id
-    private long rid;
-    //注册时间
-    private String[] regTime;
-    //最后登陆时间
-    private String[] lastlogin_time;
-    //金币范围
-    private JSONObject gold;
-    //输赢区间
-    private JSONObject winningLosing;
-    //注册时间
-    private JSONObject recharge;
+    public QueryParamsVo() {
+        this.attributes = new HashMap<>();
+        this.objects = new HashMap<>();
+    }
 
-    private Integer pageNum;
+    public void addAttribute(String key, String value) {
+        attributes.put(key, value);
+    }
 
-    private Integer pageSize;
+    public void addObject(String key, Object value) {
+        objects.put(key, value);
+    }
+
+    public String getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    public Object getObject(String key) {
+        return objects.get(key);
+    }
+
+    // 可以根据需要添加其他方法或自定义逻辑
+
 }

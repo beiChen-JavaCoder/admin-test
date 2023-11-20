@@ -78,7 +78,6 @@ public class Player {
     @Column(name = "is_online")
     private byte isOnline;
 
-
     //表示当前账号是否是激活状态，1表示激活，非1表示未激活，一般用于冻结账号
 
     @Column(name = "is_activate")

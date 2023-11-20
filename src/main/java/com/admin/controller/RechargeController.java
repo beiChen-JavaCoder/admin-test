@@ -2,7 +2,6 @@ package com.admin.controller;
 
 import com.admin.domain.ResponseResult;
 import com.admin.domain.vo.PageVo;
-import com.admin.domain.vo.QueryParamsVo;
 import com.admin.domain.vo.RechargeVo;
 import com.admin.domain.vo.PlayerRechargeVo;
 import com.admin.service.PlayerService;
