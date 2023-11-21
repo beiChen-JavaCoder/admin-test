@@ -42,4 +42,6 @@ public interface RobotService {
      * @return
      */
     ResponseResult updateRobotName(Robot robot);
+
+    ResponseResult delRobot(Long robotId);
 }

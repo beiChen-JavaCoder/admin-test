@@ -5,24 +5,29 @@ import cn.hutool.core.date.DateUtil;
 import com.admin.component.IdManager;
 import com.admin.constants.SystemConstants;
 import com.admin.domain.entity.Menu;
+import com.admin.domain.entity.UserRole;
 import com.admin.service.MenuService;
 import com.admin.utils.SecurityUtils;
 import com.mongodb.client.result.DeleteResult;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.mongodb.client.model.Aggregates.project;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.lookup;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
 
 
 /**
@@ -55,31 +60,6 @@ public class MenuServiceImpl implements MenuService {
         return perms;
     }
     //否则返回所具有的权限
-
-    //    public List<String> findPermsByUserId(String Id){
-//        MatchOperation match = match(Criteria.where("ur.user_id").is(userId)
-//                .and("m.menu_type").in("C", "F")
-//                .and("m.status").is(0)
-//                .and("m.del_flag").is(0));
-//
-//        LookupOperation lookupRoleMenu = lookup("sys_role_menu", "role_id", "role_id", "roles");
-//        LookupOperation lookupMenu = lookup("sys_menu", "id", "menu_id", "menus");
-//
-//        ProjectionOperation project = project().and("menus.perms").as("perms");
-//
-//        Aggregation aggregation = newAggregation(match, lookupRoleMenu, lookupMenu, project);
-//
-//        AggregationResults<UserRole> results = mongoTemplate.aggregate(aggregation, "sys_user_role", UserRole.class);
-//        List<UserRole> documents = results.getMappedResults();
-//
-//        List<String> perms = new ArrayList<>();
-//        for (UserRole document : documents) {
-//            List<String> permsList = document.getList("perms", String.class);
-//            perms.addAll(permsList);
-//        }
-//
-//        return perms;
-//    }
 //
     @Override
     public List<Menu> selectRouterMenuTreeByUserId(Long userId) {
@@ -213,7 +193,7 @@ public class MenuServiceImpl implements MenuService {
 //        return childrenList;
 //    }
     private List<Menu> selectAllRouterMenu() {
-        Aggregation aggregation = Aggregation.newAggregation(
+        Aggregation aggregation = newAggregation(
                 Aggregation.match(
                         Criteria.where("menu_type").in("C", "M")
                                 .and("status").is("0")
@@ -252,5 +232,38 @@ public class MenuServiceImpl implements MenuService {
                 .collect(Collectors.toList());
         return childrenList;
     }
+    public List<String> selectPermsByUserId(String userId) {
+        // 创建查询条件
+        Criteria criteria = new Criteria();
+        criteria.and("user_id").is(userId)
+                .and("menu_type").in("C", "F")
+                .and("status").is(0)
+                .and("del_flag").is(0);
+
+        // 创建聚合管道
+        Aggregation aggregation = Aggregation.newAggregation(
+                // 使用match操作筛选符合条件的文档
+                Aggregation.match(criteria),
+                // 使用lookup操作进行关联查询，类似于SQL中的左连接
+                Aggregation.lookup("sys_role_menu", "role_id", "role_id", "roleMenus"),
+                Aggregation.unwind("roleMenus"), // 展开数组字段
+                Aggregation.lookup("sys_menu", "menu_id", "id", "menus"),
+                Aggregation.unwind("menus"), // 再次展开数组字段
+                // 使用group操作进行分组统计，这里将perms字段聚合为一个列表
+                Aggregation.group("menus.perms").addToSet("menus.perms").as("permsList")
+        );
+        // 执行聚合查询
+        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "sys_user_role", Document.class);
+
+        // 处理查询结果
+        List<String> permsList = new ArrayList<>();
+        results.getMappedResults().forEach(document -> {
+            List<String> perms = (List<String>) document.get("permsList");
+            permsList.addAll(perms);
+        });
+
+        return permsList;
+    }
+
 }
 

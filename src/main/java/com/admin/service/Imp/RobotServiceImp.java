@@ -1,5 +1,6 @@
 package com.admin.service.Imp;
 
+import com.admin.component.IdManager;
 import com.admin.config.MongoUtil;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.Robot;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,7 +44,7 @@ public class RobotServiceImp implements RobotService {
     @Autowired
     private Notification notification;
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private IdManager idManager;
 
 
     @Override
@@ -78,6 +80,11 @@ public class RobotServiceImp implements RobotService {
                 robot -> robotAll.stream().noneMatch((
                         robota -> robot.getRobotName()
                                 .equals(robota.getRobotName())))).collect(Collectors.toList());
+        //给id赋值
+        robotList.forEach(robot -> {
+            robot.setId(idManager.getMaxRobotId().incrementAndGet());
+        });
+
         Collection<Robot> rerobots = gameTemplate.insertAll(robotList);
 
         if (rerobots.isEmpty()) {
@@ -217,14 +224,39 @@ public class RobotServiceImp implements RobotService {
 
     @Override
     public ResponseResult updateRobotName(Robot robot) {
+        Long userId = SecurityUtils.getUserId();
+        log.info("用户id:"+userId+"正在删除"+robot.getId()+"号机器人");
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
 
-//        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
-//        gameTemplate.updateFirst(Query.query(Criteria.where("robot_name")
-//                .is(robot.getRobotName())), Update
-//                .update("robot_name",robot.getRobotName()),Robot.class);
+        Update update = new Update();
+        update.set("robot_name", robot.getRobotName());
+        boolean re = gameTemplate.updateFirst(
+                        Query.query(Criteria.where("_id").is(robot.getId())),
+                        update, Robot.class)
+                .wasAcknowledged();
+        if (re) {
+            return ResponseResult.okResult(200, "更新成功");
+        }
 
+        return ResponseResult.errorResult(500, "更新失败");
+    }
 
-        return null;
+    @Override
+    public ResponseResult delRobot(Long robotId) {
+        Long userId = SecurityUtils.getUserId();
+        log.info("用户id:"+userId+"正在删除"+robotId+"号机器人");
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+        boolean result = gameTemplate
+                .remove(Query.query(Criteria.where("_id")
+                        .is(robotId)), Robot.class)
+                .wasAcknowledged();
+        if (result) {
+            log.info("用户id:"+userId+"成功删除"+robotId+"号机器人");
+            return ResponseResult.okResult(200, "删除成功");
+        }
+        log.info("用户id:"+userId+"删除失败"+robotId+"号机器人");
+        return ResponseResult.errorResult(500, "删除失败");
+
     }
 
 }

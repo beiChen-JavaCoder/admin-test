@@ -1,10 +1,9 @@
 package com.admin.component;
 
 import com.admin.config.MongoUtil;
-import com.admin.domain.entity.Menu;
-import com.admin.domain.entity.MerchantEntity;
-import com.admin.domain.entity.Role;
-import com.admin.domain.entity.User;
+import com.admin.domain.entity.*;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiOperation;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -21,16 +20,31 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @Component
 public class IdManager {
-
-
+    /**
+     * 商户原子id
+     */
     @Getter
     private AtomicLong maxMerchantId = new AtomicLong();
+    /**
+     * 用户原子id
+     */
     @Getter
     private AtomicLong maxUserId = new AtomicLong();
+    /**
+     * 菜单原子id
+     */
     @Getter
     private AtomicLong maxMenuId = new AtomicLong();
+    /**
+     * 角色原子id
+     */
     @Getter
     private AtomicLong maxRoleId = new AtomicLong();
+    /**
+     * 机器人原子id
+     */
+    @Getter
+    private AtomicLong maxRobotId = new AtomicLong();
 
     @Autowired
     MongoTemplate mongoTemplate;
@@ -59,6 +73,11 @@ public class IdManager {
         Role role = mongoTemplate.findOne(queryRole, Role.class);
         if (role != null) {
             maxRoleId.set(role.getId());
+        }
+        Query queryRobot = new Query().with(Sort.by(Sort.Direction.DESC, "_id")).limit(1);
+        Robot robot = gameTemplate.findOne(queryRobot, Robot.class);
+        if (robot != null) {
+            maxRobotId.set(robot.getId());
         }
     }
 }

@@ -21,11 +21,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
@@ -38,9 +40,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -230,4 +230,55 @@ public class TestAdminApplication {
 
     }
 
+    @Test
+    void test01() {
+
+        AggregationOperation matchUser = Aggregation.match(Criteria.where("user_id").is(5));
+        AggregationOperation lookupRoleMenu = Aggregation.lookup("sys_role_menu", "role_id", "role_id", "role_menu");
+        AggregationOperation unwindRoleMenu = Aggregation.unwind("role_menu");
+        AggregationOperation lookupMenu = Aggregation.lookup("sys_menu", "id", "role_menu.menu_id", "menu");
+        AggregationOperation unwindMenu = Aggregation.unwind("menu");
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                matchUser,
+                lookupRoleMenu,
+                unwindRoleMenu,
+                lookupMenu,
+                unwindMenu,
+                Aggregation.group("menu.perms").addToSet("menu.perms").as("perms")
+        );
+        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "sys_user_role", Document.class);
+        List<Document> mappedResults = results.getMappedResults();
+        ArrayList<String> perms = new ArrayList<>();
+        mappedResults.forEach(document -> {
+            perms.add(String.valueOf(document.get("perms")));
+        });
+        log.info(perms.toString());
+
+    }
+
+    @Test
+    void test002() {
+
+        Aggregation aggregation = Aggregation.newAggregation(
+
+
+                Aggregation.lookup("sys_role_menu", "role_id", "role_id", "rm"),
+                Aggregation.unwind("rm"),
+                Aggregation.lookup("sys_menu", "rm.menu_id", "_id", "menus"),
+                Aggregation.unwind("menus"),
+                Aggregation.match(Criteria.where("user_id").is(5)),
+//                        .and("menus.status").is(0)
+//                        .and("menus.menu_type").in("C", "F"))
+                Aggregation.group("menus.perms").addToSet("menus.perms").as("perms")
+
+
+        );
+        AggregationResults<Document> sysUserRole = mongoTemplate.aggregate(aggregation, "sys_user_role", Document.class);
+        log.info(sysUserRole.getMappedResults().toString());
+
+
+    }
 }
+
+

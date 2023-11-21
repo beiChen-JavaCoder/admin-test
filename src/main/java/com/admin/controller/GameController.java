@@ -121,9 +121,14 @@ public class GameController {
     public ResponseResult getRobotList(Integer pageNum,Integer pageSize) {
         return robotService.findRobotPage(pageNum,pageSize);
     }
+    @DeleteMapping("/robot/list/{robotId}")
+    @ApiOperation("删除机器人")
+    public ResponseResult delRobot(@PathVariable Long robotId) {
+        return robotService.delRobot(robotId);
+    }
     @PostMapping("/robot/update")
     @ApiOperation("修改机器人信息")
-    public ResponseResult updateRobotName(Robot robot){
+    public ResponseResult updateRobotName(@RequestBody Robot robot){
         return robotService.updateRobotName(robot);
     }
 
