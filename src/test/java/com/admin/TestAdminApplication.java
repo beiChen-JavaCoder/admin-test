@@ -46,6 +46,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.project;
+
 @SpringBootTest(classes = AdminTest.class)
 @EnableTransactionManagement
 @Slf4j
@@ -274,8 +276,11 @@ public class TestAdminApplication {
 
 
         );
-        AggregationResults<Document> sysUserRole = mongoTemplate.aggregate(aggregation, "sys_user_role", Document.class);
-        log.info(sysUserRole.getMappedResults().toString());
+        AggregationResults<Map> sysUserRole = mongoTemplate.aggregate(aggregation, "sys_user_role", Map.class);
+        List<Object> perms = sysUserRole.getMappedResults().stream().map(item -> {
+            return item.get("perms");
+        }).collect(Collectors.toList());
+        log.info(String.valueOf(perms));
 
 
     }

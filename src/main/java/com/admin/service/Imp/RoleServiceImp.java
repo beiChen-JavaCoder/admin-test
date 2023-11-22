@@ -10,6 +10,7 @@ import com.admin.domain.vo.PageVo;
 import com.admin.service.RoleMenuService;
 import com.admin.service.RoleService;
 import com.admin.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -20,10 +21,13 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
@@ -34,6 +38,7 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
  * @since 2022-08-09 22:36:47
  */
 @Service
+@Slf4j
 public class RoleServiceImp implements RoleService {
 
     @Autowired
@@ -48,14 +53,14 @@ public class RoleServiceImp implements RoleService {
     public List<String> selectRoleKeyByUserId(Long id) {
         //判断是否是管理员 如果是返回集合中只需要有admin
         //id==1L
-        if (true) {
+        if (id == 1L) {
             List<String> roleKeys = new ArrayList<>();
             roleKeys.add("admin");
             return roleKeys;
         }
         //否则返回该角色对应的权限
         //待测试
-        return selectRoleKeyByUserId(id);
+        return findRoleKeyByUserId(id);
 
 
     }
@@ -227,17 +232,50 @@ public class RoleServiceImp implements RoleService {
                 Aggregation.match(Criteria.where("user_id").is(userId)),
                 Aggregation.lookup("sys_role", "role_id", "id", "roles"),
                 Aggregation.unwind("roles"),
-                Aggregation.match(Criteria.where("roles.status").is(0).and("roles.del_flag").is(0)),
+                Aggregation.match(Criteria.where("roles.status").is("0")
+                        .and("roles.del_flag")
+                        .is("0")),
                 Aggregation.project("roles.role_key").andExclude("_id")
         );
 
         AggregationResults<String> results = mongoTemplate.aggregate(aggregation, "sys_user_role", String.class);
         List<String> roleKeys = new ArrayList<>();
         for (String roleKey : results.getMappedResults()) {
-
             roleKeys.add(roleKey);
         }
         return roleKeys;
+    }
+
+    private List<String> findRoleKeyByUserId(Long userId) {
+        //聚合查询
+        Aggregation aggregation = Aggregation.newAggregation(
+                /**
+                 * form: 关联的对象集合
+                 * local:主表关联字段
+                 * foreign: 关联表关联字段
+                 * as: 替换名称
+                 *
+                 */
+                Aggregation.lookup("sys_role", "role_id", "_id", "roles"),
+                Aggregation.match(Criteria.where("user_id").is(userId)
+                        .and("roles.status").is("0")
+                        .and("roles.del_flag").is("0")
+                        .and("roles.menu_type").in("C","F")),
+                Aggregation.project("roles.role_key")
+        );
+
+        AggregationResults<Map> sysUserRole = mongoTemplate.aggregate(aggregation, "sys_user_role", Map.class);
+        List<Map> result = sysUserRole.getMappedResults();
+        List<String> reRoleKeys = result.stream()
+                .flatMap(item -> {
+                    ArrayList<String> roleKeys = (ArrayList<String>) item.get("role_key");
+                    return roleKeys.stream();
+                })
+                .collect(Collectors.toList());
+
+        log.info(String.valueOf(reRoleKeys));
+
+        return reRoleKeys;
     }
 }
 

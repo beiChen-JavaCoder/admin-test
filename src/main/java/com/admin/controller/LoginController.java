@@ -74,6 +74,11 @@ public class LoginController {
         Long userId = SecurityUtils.getUserId();
         //查询menu 结果是tree的形式
         List<Menu> menus = menuService.selectRouterMenuTreeByUserId(userId);
+        if (menus == null) {
+
+            return ResponseResult.errorResult(500,"请联系管理检查权限信息");
+
+        }
         //封装数据返回
         return ResponseResult.okResult(new RoutersVo(menus));
     }

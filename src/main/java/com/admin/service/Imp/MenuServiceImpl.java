@@ -5,10 +5,10 @@ import cn.hutool.core.date.DateUtil;
 import com.admin.component.IdManager;
 import com.admin.constants.SystemConstants;
 import com.admin.domain.entity.Menu;
-import com.admin.domain.entity.UserRole;
 import com.admin.service.MenuService;
 import com.admin.utils.SecurityUtils;
-import com.mongodb.client.result.DeleteResult;
+import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -16,18 +16,16 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.mongodb.client.model.Aggregates.project;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.lookup;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
 
 /**
@@ -37,6 +35,7 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.newA
  * @since 2022-08-09 22:32:10
  */
 @Service("menuService")
+@Slf4j
 public class MenuServiceImpl implements MenuService {
 
     @Autowired
@@ -49,27 +48,121 @@ public class MenuServiceImpl implements MenuService {
     public List<String> selectPermsByUserId(Long id) {
 
         //管理员权限
-        Query query = new Query();
-        query.addCriteria(Criteria.where("menu_type").in(SystemConstants.MENU, SystemConstants.BUTTON));
-        query.addCriteria(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
-        List<Menu> menus = mongoTemplate.find(query, Menu.class);
-        List<String> perms = menus.stream()
-                .map(Menu::getPerms)
-                .collect(Collectors.toList());
+        if (SecurityUtils.isAdmin()) {
+            Query query = new Query();
+            query.addCriteria(Criteria.where("menu_type").in(SystemConstants.MENU, SystemConstants.BUTTON));
+            query.addCriteria(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
+            query.with(Sort.by(Sort.Direction.ASC,"parent_id","order_num"));
+            List<Menu> menus = mongoTemplate.find(query, Menu.class);
+            List<String> perms = menus.stream()
+                    .map(Menu::getPerms)
+                    .collect(Collectors.toList());
 
-        return perms;
+            return perms;
+        }
+        //否则返回所具有的权限
+        return findPermsByUserId(id);
     }
-    //否则返回所具有的权限
-//
+
     @Override
     public List<Menu> selectRouterMenuTreeByUserId(Long userId) {
 
-        List<Menu> menus = selectAllRouterMenu();
+        List<Menu> menus = null;
+        //判断是否是管理员
+        if (SecurityUtils.isAdmin()) {
+            //如果是 获取所有符合要求的Menu
+            menus = selectAllRouterMenu();
+        } else {
+            //否则  获取当前用户所具有的Menu
+            menus = findRouterMenuTreeByUserId(userId);
+        }
 
         //构建tree
         //先找出第一层的菜单  然后去找他们的子菜单设置到children属性中
         List<Menu> menuTree = builderMenuTree(menus, 0L);
         return menuTree;
+    }
+
+    private List<Menu> findRouterMenuTreeByUserId(Long userId) {
+
+        Aggregation aggregation = Aggregation.newAggregation(
+
+                Aggregation.lookup("sys_role_menu", "role_id", "role_id", "roleMenus"),
+                Aggregation.unwind("roleMenus", true),
+                Aggregation.lookup("sys_menu", "roleMenus.menu_id", "_id", "menus"),
+                Aggregation.unwind("menus", true),
+                Aggregation.match(Criteria.where("user_id").is(userId)
+                        .and("menus.status").is("0")
+                        .and("menus.menu_type").in("C", "M")
+                        .and("menus.del_flag").is("0")
+                ),
+                Aggregation.project()
+                        .and("menus._id").as("id")
+                        .and("menus.parent_id").as("parent_id")
+                        .and("menus.menu_name").as("menu_name")
+                        .and("menus.path").as("path")
+                        .and("menus.component").as("component")
+                        .and("menus.visible").as("visible")
+                        .and("menus.status").as("status")
+                        .and(ConditionalOperators.ifNull("menus.perms").then("")).as("perms")
+                        .and("menus.is_frame").as("is_frame")
+                        .and("menus.menu_type").as("menu_type")
+                        .and("menus.icon").as("icon")
+                        .and("menus.order_num").as("order_num")
+                        .and("menus.create_time").as("create_time")
+                        .andExclude("_id"), // 排除"_id"字段
+                group(fields().and("id").and("parent_id")
+                        .and("menu_name")
+                        .and("path")
+                        .and("component")
+                        .and("visible")
+                        .and("status")
+                        .and("perms")
+                        .and("is_frame")
+                        .and("menu_type")
+                        .and("icon")
+                        .and("order_num")
+                        .and("create_time"))
+                        .first("id").as("id")
+                        .first("parent_id").as("parent_id")
+                        .first("menu_name").as("menu_name")
+                        .first("path").as("path")
+                        .first("component").as("component")
+                        .first("visible").as("visible")
+                        .first("status").as("status")
+                        .first("perms").as("perms")
+                        .first("is_frame").as("is_frame")
+                        .first("menu_type").as("menu_type")
+                        .first("icon").as("icon")
+                        .first("order_num").as("order_num")
+                        .first("create_time").as("create_time"),
+                sort(Sort.Direction.ASC, "parent_id", "order_num")
+
+        );
+
+        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "sys_user_role", Document.class);
+        List<Document> menuList = results.getMappedResults();
+        ArrayList<Menu> reMenus = new ArrayList<>();
+        menuList.stream().forEach(itme -> {
+            Map map = itme.get("_id", Map.class);
+            Menu menu = new Menu();
+            menu.setId(Long.valueOf(String.valueOf(map.get("id"))));
+            menu.setVisible(String.valueOf(map.get("visible")));
+            menu.setCreateTime(new Date(String.valueOf(map.get("create_time"))));
+            menu.setMenuType(String.valueOf(map.get("menu_type")));
+            menu.setIcon(String.valueOf(map.get("icon")));
+            menu.setIsFrame(Integer.valueOf(String.valueOf(map.get("is_frame"))));
+            menu.setPath(String.valueOf(map.get("path")));
+            menu.setComponent(String.valueOf(map.get("component")));
+            menu.setParentId(Long.valueOf(String.valueOf(map.get("parent_id"))));
+            menu.setOrderNum(Integer.valueOf(String.valueOf(map.get("order_num"))));
+            menu.setPerms(String.valueOf(map.get("perms")));
+            menu.setStatus(String.valueOf(map.get("status")));
+            menu.setMenuName(String.valueOf(map.get("menu_name")));
+            reMenus.add(menu);
+        });
+
+        return reMenus;
     }
 
     @Override
@@ -232,37 +325,28 @@ public class MenuServiceImpl implements MenuService {
                 .collect(Collectors.toList());
         return childrenList;
     }
-    public List<String> selectPermsByUserId(String userId) {
-        // 创建查询条件
-        Criteria criteria = new Criteria();
-        criteria.and("user_id").is(userId)
-                .and("menu_type").in("C", "F")
-                .and("status").is(0)
-                .and("del_flag").is(0);
 
-        // 创建聚合管道
+    private List<String> findPermsByUserId(Long userId) {
+
         Aggregation aggregation = Aggregation.newAggregation(
-                // 使用match操作筛选符合条件的文档
-                Aggregation.match(criteria),
-                // 使用lookup操作进行关联查询，类似于SQL中的左连接
-                Aggregation.lookup("sys_role_menu", "role_id", "role_id", "roleMenus"),
-                Aggregation.unwind("roleMenus"), // 展开数组字段
-                Aggregation.lookup("sys_menu", "menu_id", "id", "menus"),
-                Aggregation.unwind("menus"), // 再次展开数组字段
-                // 使用group操作进行分组统计，这里将perms字段聚合为一个列表
-                Aggregation.group("menus.perms").addToSet("menus.perms").as("permsList")
+
+                Aggregation.lookup("sys_role_menu", "role_id", "role_id", "rm"),
+                Aggregation.unwind("rm"),
+                Aggregation.lookup("sys_menu", "rm.menu_id", "_id", "menus"),
+                Aggregation.unwind("menus"),
+                Aggregation.match(Criteria.where("user_id").is(userId)
+                        .and("menus.status").is("0")
+                        .and("menus.menu_type").in("C", "F")),
+                group("menus.perms").addToSet("menus.perms").as("perms")
         );
-        // 执行聚合查询
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "sys_user_role", Document.class);
+        AggregationResults<Map> sysUserRole = mongoTemplate.aggregate(aggregation, "sys_user_role", Map.class);
+        List<String> perms = sysUserRole.getMappedResults().stream().map(item -> {
+            return String.valueOf(item.get("perms"));
+        }).collect(Collectors.toList());
+        log.info(String.valueOf(perms));
 
-        // 处理查询结果
-        List<String> permsList = new ArrayList<>();
-        results.getMappedResults().forEach(document -> {
-            List<String> perms = (List<String>) document.get("permsList");
-            permsList.addAll(perms);
-        });
 
-        return permsList;
+        return perms;
     }
 
 }
