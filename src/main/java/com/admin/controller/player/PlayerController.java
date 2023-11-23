@@ -1,4 +1,4 @@
-package com.admin.controller;
+package com.admin.controller.player;
 
 import com.admin.domain.ResponseResult;
 import com.admin.domain.vo.PlayerVo;

@@ -9,9 +9,15 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class PageVo {
 
     private List rows;
     private Long total;
+
+    public PageVo(List rows, Long total) {
+
+        this.setRows(rows);
+        this.setTotal(total);
+
+    }
 }

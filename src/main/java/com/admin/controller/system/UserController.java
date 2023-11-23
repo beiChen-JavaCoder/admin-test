@@ -1,4 +1,4 @@
-package com.admin.controller;
+package com.admin.controller.system;
 
 import com.admin.component.IdManager;
 import com.admin.domain.ResponseResult;

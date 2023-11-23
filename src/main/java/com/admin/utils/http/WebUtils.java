@@ -1,4 +1,4 @@
-package com.admin.utils;
+package com.admin.utils.http;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;

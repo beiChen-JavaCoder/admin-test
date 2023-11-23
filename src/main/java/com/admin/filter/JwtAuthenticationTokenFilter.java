@@ -4,7 +4,7 @@ import com.admin.domain.entity.LoginUser;
 import com.admin.enums.AppHttpCodeEnum;
 import com.admin.utils.JwtUtil;
 import com.admin.utils.RedisCache;
-import com.admin.utils.WebUtils;
+import com.admin.utils.http.WebUtils;
 import com.alibaba.fastjson.JSON;
 import com.admin.domain.ResponseResult;
 

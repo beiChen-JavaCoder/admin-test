@@ -2,7 +2,7 @@ package com.admin.handler.security;
 
 import com.admin.domain.ResponseResult;
 import com.admin.enums.AppHttpCodeEnum;
-import com.admin.utils.WebUtils;
+import com.admin.utils.http.WebUtils;
 import com.alibaba.fastjson.JSON;
 
 import org.springframework.security.access.AccessDeniedException;

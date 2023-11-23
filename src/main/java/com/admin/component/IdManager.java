@@ -45,7 +45,16 @@ public class IdManager {
      */
     @Getter
     private AtomicLong maxRobotId = new AtomicLong();
-
+    /**
+     * 登录日志原子id
+     */
+    @Getter
+    private AtomicLong maxLogininforId = new AtomicLong();
+    /**
+     * 操作日志原子id
+     */
+    @Getter
+    private AtomicLong maxoperId = new AtomicLong();
     @Autowired
     MongoTemplate mongoTemplate;
     @Autowired
@@ -78,6 +87,16 @@ public class IdManager {
         Robot robot = gameTemplate.findOne(queryRobot, Robot.class);
         if (robot != null) {
             maxRobotId.set(robot.getId());
+        }
+        Query queryLoingor = new Query().with(Sort.by(Sort.Direction.DESC, "_id")).limit(1);
+        SysLogininfor loingor = gameTemplate.findOne(queryLoingor, SysLogininfor.class);
+        if (loingor != null) {
+            maxLogininforId.set(loingor.getInfoId());
+        }
+        Query queryOper = new Query().with(Sort.by(Sort.Direction.DESC, "_id")).limit(1);
+        SysOperLog  oper= gameTemplate.findOne(queryOper, SysOperLog.class);
+        if (oper != null) {
+            maxoperId.set(oper.getOperId());
         }
     }
 }
