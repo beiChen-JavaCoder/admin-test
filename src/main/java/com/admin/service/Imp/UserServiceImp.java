@@ -75,9 +75,9 @@ public class UserServiceImp implements UserService {
         if (StringUtils.hasText(user.getUserName())) {
             criteriaList.add(Criteria.where("userName").regex(user.getUserName()));
         }
-        if (StringUtils.hasText(user.getStatus())) {
-            criteriaList.add(Criteria.where("status").is(user.getStatus()));
-        }
+//        if (StringUtils.hasText(user.getStatus())) {
+//            criteriaList.add(Criteria.where("status").is(user.getStatus()));
+//        }
 
         Criteria criteria = new Criteria();
         if (!criteriaList.isEmpty()) {
@@ -107,7 +107,7 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public boolean checkUserNameUnique(String userName){
+    public boolean checkUserNameUnique(String userName) {
 
         Query query = new Query(Criteria.where("user_name").is(userName));
         return mongoTemplate.count(query, User.class) == 0;
@@ -127,14 +127,14 @@ public class UserServiceImp implements UserService {
             throw new SystemException(AppHttpCodeEnum.ADD_USER_MERCHANT_NO);
         }
         //判断新增用户类型
-        for (Long type: user.getRoleIds()) {
-            if ((type+"").equals(UserTypeEnum.admin.getCode())){
-                user.setType(type+"");
-                user.setType(UserTypeEnum.admin.getCode()+"");
+        for (Long type : user.getRoleIds()) {
+            if ((type + "").equals(UserTypeEnum.admin.getCode())) {
+                user.setType(type + "");
+                user.setType(UserTypeEnum.admin.getCode() + "");
                 break;
-            }else if ((type+"").equals(UserTypeEnum.common.getCode())){
-                user.setType(type+"");
-                user.setType(UserTypeEnum.common.getCode()+"");
+            } else if ((type + "").equals(UserTypeEnum.common.getCode())) {
+                user.setType(type + "");
+                user.setType(UserTypeEnum.common.getCode() + "");
                 //给用户绑定商户id
                 user.setMerchantEntId(merchantEntity.getId());
             }
@@ -206,10 +206,23 @@ public class UserServiceImp implements UserService {
         }
         if (user.getPassword() != null) {
             // 如果password不为空，则添加加密更新操作
-            update.set("password",passwordEncoder.encode(user.getPassword()));
+            update.set("password", passwordEncoder.encode(user.getPassword()));
         }
         update.set("updateTime", new Date());
         mongoTemplate.updateFirst(updateQuery, update, User.class);
+    }
+
+    @Override
+    public Object updateById(User userDto) {
+
+        User user = mongoTemplate
+                .findOne(Query.query(Criteria.where("_id").is(userDto.getId())), User.class);
+        user.setStatus(userDto.getStatus());
+        User reUser = mongoTemplate.save(user);
+        if (reUser == null) {
+            return ResponseResult.errorResult(500, "修改玩家状态失败");
+        }
+        return ResponseResult.okResult(200, "修改玩家状态成功");
     }
 
 

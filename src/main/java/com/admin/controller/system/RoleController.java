@@ -1,11 +1,15 @@
 package com.admin.controller.system;
 
+import com.admin.annotation.Log;
 import com.admin.domain.ResponseResult;
+import com.admin.domain.dto.ChangeRoleStatusDto;
 import com.admin.domain.entity.Menu;
 import com.admin.domain.entity.Role;
+import com.admin.enums.BusinessType;
 import com.admin.service.Imp.MenuServiceImpl;
 import com.admin.service.MenuService;
 import com.admin.service.RoleService;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +47,8 @@ public class RoleController {
     /**
      * 新增角色
      */
+    @Log(title = "新增角色",businessType = BusinessType.INSERT)
+    @ApiOperation("新增角色")
     @PostMapping
     public ResponseResult add(@RequestBody Role role) {
         roleService.addRole(role);
@@ -55,6 +61,8 @@ public class RoleController {
      * @param id
      *
      */
+    @ApiOperation("删除角色")
+    @Log(title = "删除角色",businessType = BusinessType.DELETE)
     @DeleteMapping("/{id}")
     public ResponseResult remove(@PathVariable(name = "id") Long id) {
 
@@ -65,10 +73,20 @@ public class RoleController {
     /**
      * 修改保存角色
      */
+    @ApiOperation("修改/保存角色")
+    @Log(title = "修改/或保存角色",businessType = BusinessType.INSERT)
     @PutMapping
     public ResponseResult edit(@RequestBody Role role) {
         roleService.updateRole(role);
         return ResponseResult.okResult();
     }
-
+    @ApiOperation("修改状态")
+    @Log(title = "角色修改状态",businessType = BusinessType.UPDATE)
+    @PutMapping("/changeStatus")
+    public ResponseResult changeStatus(@RequestBody ChangeRoleStatusDto roleStatusDto) {
+        Role role = new Role();
+        role.setId(roleStatusDto.getRoleId());
+        role.setStatus(roleStatusDto.getStatus());
+        return ResponseResult.okResult(roleService.updateById(role));
+    }
 }

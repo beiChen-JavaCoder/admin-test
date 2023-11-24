@@ -15,6 +15,6 @@ public interface GameService {
      */
     ResponseResult findGamePage(QueryParamsVo queryParamsVo);
 
-    ResponseResult downlineGame();
+    ResponseResult turnGame(Long gameId);
 
 }

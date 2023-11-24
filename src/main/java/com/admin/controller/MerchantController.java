@@ -1,11 +1,13 @@
 package com.admin.controller;
 
+import com.admin.annotation.Log;
 import com.admin.dao.MerchantRepository;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.PageVo;
 import com.admin.enums.AppHttpCodeEnum;
+import com.admin.enums.BusinessType;
 import com.admin.service.MerchantService;
 import com.admin.utils.BeanCopyUtils;
 import com.admin.utils.SecurityUtils;
@@ -27,7 +29,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/merchant")
-@Api("商户控制器")
+@Api("商户模块")
 public class MerchantController {
 
     @Autowired
@@ -42,7 +44,7 @@ public class MerchantController {
 
         return merchantService.findMerchantPage(merchantVo, pageNum, pageSize);
     }
-
+    @Log(title = "删除商户",businessType = BusinessType.DELETE)
     @DeleteMapping("/{merchantIds}")
     @ApiOperation(value = "删除商户")
     public ResponseResult delMerchant(@PathVariable List<Long> merchantIds) {
@@ -53,6 +55,7 @@ public class MerchantController {
         return ResponseResult.okResult();
     }
 
+    @Log(title = "新增商户",businessType = BusinessType.INSERT)
     @PostMapping()
     @ApiOperation("新增商户")
     public ResponseResult addMerchant(@RequestBody MerchantVo merchantVo) {

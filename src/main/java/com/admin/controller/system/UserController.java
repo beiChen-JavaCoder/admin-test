@@ -1,7 +1,10 @@
 package com.admin.controller.system;
 
+import com.admin.annotation.Log;
 import com.admin.component.IdManager;
 import com.admin.domain.ResponseResult;
+import com.admin.domain.dto.ChangeRoleStatusDto;
+import com.admin.domain.dto.ChangeUserStatusDto;
 import com.admin.domain.entity.MerchantBean;
 import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.entity.Role;
@@ -10,6 +13,7 @@ import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.UserAndMerchantVo;
 import com.admin.domain.vo.UserInfoAndRoleIdsVo;
 import com.admin.enums.AppHttpCodeEnum;
+import com.admin.enums.BusinessType;
 import com.admin.enums.UserTypeEnum;
 import com.admin.exception.SystemException;
 import com.admin.service.MerchantService;
@@ -17,12 +21,15 @@ import com.admin.service.RoleInfoService;
 import com.admin.service.UserService;
 import com.admin.utils.BeanCopyUtils;
 import com.admin.utils.SecurityUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import java.util.List;
 
+@Api("用户模块")
 @RestController
 @RequestMapping("/system/user")
 public class UserController {
@@ -37,6 +44,7 @@ public class UserController {
     /**
      * 获取用户列表
      */
+    @ApiOperation("用户列表")
     @GetMapping("/list")
     public ResponseResult list(User user, Integer pageNum, Integer pageSize) {
         return userService.findUserPage(user, pageNum, pageSize);
@@ -45,6 +53,8 @@ public class UserController {
     /**
      * 新增用户
      */
+    @ApiOperation("新增用户")
+    @Log(title = "新增用户",businessType = BusinessType.INSERT)
     @PostMapping
     public ResponseResult add(@RequestBody UserAndMerchantVo userAndMerchantVo) {
 
@@ -59,6 +69,7 @@ public class UserController {
     /**
      * 根据用户编号获取详细信息
      */
+    @ApiOperation("用户详情")
     @GetMapping(value = {"/{userId}"})
     public ResponseResult getUserInfoAndRoleIds(@PathVariable(value = "userId") Long userId) {
         List<Role> roles = roleService.findRoleAll();
@@ -73,6 +84,8 @@ public class UserController {
     /**
      * 删除用户
      */
+    @ApiOperation("删除用户")
+    @Log(title = "删除用户",businessType = BusinessType.DELETE)
     @DeleteMapping("/{userIds}")
     public ResponseResult remove(@PathVariable List<Long> userIds) {
         if (userIds.contains(SecurityUtils.getUserId())) {
@@ -85,9 +98,21 @@ public class UserController {
     /**
      * 修改用户
      */
+    @ApiOperation("修改用户")
+    @Log(title = "修改用户",businessType = BusinessType.UPDATE)
     @PutMapping
     public ResponseResult edit(@RequestBody User user) {
         userService.updateUser(user);
         return ResponseResult.okResult();
+    }
+    @ApiOperation("修改状态")
+    @Log(title = "用户修改状态",businessType = BusinessType.UPDATE)
+    @PutMapping("/changeStatus")
+    public ResponseResult changeStatus(@RequestBody ChangeUserStatusDto userStatusDto) {
+
+        User user = new User();
+        user.setId(userStatusDto.getUserId());
+        user.setStatus(userStatusDto.getStatus());
+        return ResponseResult.okResult(userService.updateById(user));
     }
 }

@@ -1,6 +1,7 @@
 package com.admin.service.Imp;
 
 import com.admin.constants.Constants;
+import com.admin.constants.UserConstants;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.LoginUser;
 import com.admin.domain.entity.User;
@@ -50,7 +51,7 @@ public class LoginServiceImp implements LoginService {
         } catch (Exception e) {
             if (e instanceof BadCredentialsException) {
                 //用户名或密码无效或不匹配错误
-                AsyncManager.me().execute(AsyncFactory.recordLogininfor(userName, Constants.LOGIN_FAIL, MessageUtils.message("password.not.match")));
+                AsyncManager.me().execute(AsyncFactory.recordLogininfor(userName, Constants.LOGIN_FAIL, MessageUtils.message("user.password.not.match")));
                 throw new SystemException(AppHttpCodeEnum.LOGIN_ERROR);
             } else {
                 //系统内部错误

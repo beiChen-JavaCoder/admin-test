@@ -1,10 +1,12 @@
 package com.admin.controller.game;
 
+import com.admin.annotation.Log;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.Robot;
 import com.admin.domain.entity.UserControl;
 import com.admin.domain.vo.GameControlVo;
 import com.admin.domain.vo.RobotBeanVo;
+import com.admin.enums.BusinessType;
 import com.admin.enums.GameControlTypeEnum;
 import com.admin.service.BloodPoolControlService;
 import com.admin.service.RobotService;
@@ -55,12 +57,13 @@ public class GameController {
 
     }
 
+    @Log(title = "修改金币控制台", businessType = BusinessType.UPDATE)
     @PutMapping("/blood")
     @ApiOperation("修改金币控制台")
     public ResponseResult updateGame(@RequestBody GameControlVo gameControlVo) {
         ResponseResult responseResult = checkGoldParameter(gameControlVo);
 
-        if (responseResult.getCode()==500) {
+        if (responseResult.getCode() == 500) {
             return responseResult;
         }
         return bloodPoolControlService.updateGame(gameControlVo);
@@ -80,6 +83,7 @@ public class GameController {
         return userControlService.userControlList();
     }
 
+    @Log(title = "更改点控控制台", businessType = BusinessType.UPDATE)
     @PutMapping("/p2p")
     @ApiOperation("更改点控控制台")
     public ResponseResult updateGameUser(@RequestBody UserControl userControl) {
@@ -87,6 +91,7 @@ public class GameController {
 
     }
 
+    @Log(title = "添加点控控制", businessType = BusinessType.INSERT)
     @PostMapping("/p2p")
     @ApiOperation("添加点控控制")
     public ResponseResult addUserControl(@RequestBody UserControl userControl) {
@@ -101,6 +106,10 @@ public class GameController {
         return robotService.robotControlList();
     }
 
+
+
+
+    @Log(title = "上传机器人", businessType = BusinessType.INSERT)
     @PostMapping("/robot")
     @ApiOperation("上传机器人（robotName）")
     public ResponseResult uploadFile(@RequestParam("file") MultipartFile file) {
@@ -109,6 +118,7 @@ public class GameController {
         return robotService.importRobot(file);
 
     }
+    @Log(title = "更改机器人控制", businessType = BusinessType.UPDATE)
     @PutMapping("/robot")
     @ApiOperation("更改机器人控制")
     public ResponseResult updateRobot(@RequestBody RobotBeanVo robotVo) {
@@ -116,29 +126,36 @@ public class GameController {
         return robotService.updateRobot(robotVo);
 
     }
+
     @GetMapping("/robot/list")
     @ApiOperation("机器人名称列表")
-    public ResponseResult getRobotList(Integer pageNum,Integer pageSize) {
-        return robotService.findRobotPage(pageNum,pageSize);
+    public ResponseResult getRobotList(Integer pageNum, Integer pageSize) {
+        return robotService.findRobotPage(pageNum, pageSize);
     }
+    @Log(title = "删除机器人", businessType = BusinessType.DELETE)
     @DeleteMapping("/robot/list/{robotId}")
     @ApiOperation("删除机器人")
     public ResponseResult delRobot(@PathVariable Long robotId) {
         return robotService.delRobot(robotId);
     }
+
+
+
+    @Log(title = "修改机器人信息", businessType = BusinessType.INSERT)
     @PostMapping("/robot/update")
     @ApiOperation("修改机器人信息")
-    public ResponseResult updateRobotName(@RequestBody Robot robot){
+    public ResponseResult updateRobotName(@RequestBody Robot robot) {
         return robotService.updateRobotName(robot);
     }
 
 
     /**
      * 金币控制参数校验
+     *
      * @param gameControlVo
      * @return
      */
-    private  ResponseResult checkGoldParameter(GameControlVo gameControlVo ){
+    private ResponseResult checkGoldParameter(GameControlVo gameControlVo) {
         String regex = new String();
         Pattern pattern = null;
         Matcher matcher = null;
@@ -146,31 +163,31 @@ public class GameController {
         //匹配1-10000 触发率（万分比）
         regex = "^(?:[1-9]\\d{0,3}|10000)$";
         pattern = Pattern.compile(regex);
-        if (gameControlVo.getType().equals(GameControlTypeEnum.bigVomitControl.getType())){
+        if (gameControlVo.getType().equals(GameControlTypeEnum.bigVomitControl.getType())) {
             JSONObject game = (JSONObject) gameControlVo.getGame();
             JSONObject bigEatControl = (JSONObject) game.get("bigVomitControl");
             String limitScore = String.valueOf(bigEatControl.get("ratio"));
             matcher = pattern.matcher(limitScore);
-        }else if (gameControlVo.getType().equals(GameControlTypeEnum.vomitControl.getType())){
+        } else if (gameControlVo.getType().equals(GameControlTypeEnum.vomitControl.getType())) {
             JSONObject game = (JSONObject) gameControlVo.getGame();
             JSONObject bigEatControl = (JSONObject) game.get("vomitControl");
             String limitScore = String.valueOf(bigEatControl.get("ratio"));
             matcher = pattern.matcher(limitScore);
-        }else if (gameControlVo.getType().equals(GameControlTypeEnum.bigEatControl.getType())){
+        } else if (gameControlVo.getType().equals(GameControlTypeEnum.bigEatControl.getType())) {
             JSONObject game = (JSONObject) gameControlVo.getGame();
             JSONObject bigEatControl = (JSONObject) game.get("bigEatControl");
             String limitScore = String.valueOf(bigEatControl.get("ratio"));
             matcher = pattern.matcher(limitScore);
-        }else if (gameControlVo.getType().equals(GameControlTypeEnum.eatControl.getType())){
+        } else if (gameControlVo.getType().equals(GameControlTypeEnum.eatControl.getType())) {
             JSONObject game = (JSONObject) gameControlVo.getGame();
             JSONObject bigEatControl = (JSONObject) game.get("eatControl");
             String limitScore = String.valueOf(bigEatControl.get("ratio"));
             matcher = pattern.matcher(limitScore);
-        }else {
+        } else {
             //当type为0是默认基础金币执行
             String score = gameControlVo.getScore();
-            if (score==null){
-                return ResponseResult.errorResult(500,"任务金币不能为空");
+            if (score == null) {
+                return ResponseResult.errorResult(500, "任务金币不能为空");
             }
             regex = "^-?\\d{1,13}$";
             pattern = Pattern.compile(regex);
@@ -179,7 +196,7 @@ public class GameController {
         if (!matcher.matches()) {
             return ResponseResult.errorResult(500, "请输入合规分数");
         }
-        return ResponseResult.okResult(200,"验证通过");
+        return ResponseResult.okResult(200, "验证通过");
     }
 
 }

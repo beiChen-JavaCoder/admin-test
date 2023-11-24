@@ -20,4 +20,8 @@ public interface SysOperLogService {
 
 
     ResponseResult findPageOperLog(QueryParamsVo queryParamsVo);
+
+    ResponseResult cleanOperLog();
+
+    ResponseResult deleteOperLogByIds(Long[] operIds);
 }

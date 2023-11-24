@@ -8,6 +8,7 @@ import com.admin.domain.vo.PageVo;
 import com.admin.domain.vo.QueryParamsVo;
 import com.admin.notification.Notification;
 import com.admin.service.GameService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,7 @@ import java.util.List;
  * @version 1.0
  */
 @Service
+@Slf4j
 public class GameServiceImp implements GameService {
 
     @Autowired
@@ -56,11 +58,17 @@ public class GameServiceImp implements GameService {
     }
 
     @Override
-    public ResponseResult downlineGame() {
+    public ResponseResult turnGame(Long gameId) {
 
         //发起修改关闭游戏通知
-//        notification
-        
-        return null;
+        boolean remsg = notification.gameOut(gameId);
+        if (remsg) {
+        log.info("关闭游戏id:"+gameId+"成功(通知失败)");
+            return ResponseResult.okResult(200,"关闭游戏成功");
+        }
+        log.error("关闭游戏id:"+gameId+"成功(通知失败)");
+        return  ResponseResult.errorResult(500,"关闭游戏失败(通知失败)");
+
+
     }
 }

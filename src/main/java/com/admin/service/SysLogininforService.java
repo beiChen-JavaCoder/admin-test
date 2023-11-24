@@ -21,8 +21,17 @@ public interface SysLogininforService {
      */
     public void insertLogininfor(SysLogininfor logininfor);
 
+    /**
+     * 删除登录日志
+     * @param infoIds
+     * @return
+     */
+    ResponseResult deleteLogininforByIds(Long[] infoIds);
 
-
-
+    /**
+     * 清空日志
+     * @return
+     */
+    ResponseResult cleanLogininfor();
 
 }

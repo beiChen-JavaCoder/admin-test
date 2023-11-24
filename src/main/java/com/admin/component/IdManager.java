@@ -55,6 +55,14 @@ public class IdManager {
      */
     @Getter
     private AtomicLong maxoperId = new AtomicLong();
+
+
+    /**
+     * 操作角色菜单原子id
+     */
+    @Getter
+    private AtomicLong maxRoleMenuId = new AtomicLong();
+
     @Autowired
     MongoTemplate mongoTemplate;
     @Autowired
@@ -89,14 +97,19 @@ public class IdManager {
             maxRobotId.set(robot.getId());
         }
         Query queryLoingor = new Query().with(Sort.by(Sort.Direction.DESC, "_id")).limit(1);
-        SysLogininfor loingor = gameTemplate.findOne(queryLoingor, SysLogininfor.class);
+        SysLogininfor loingor = mongoTemplate.findOne(queryLoingor, SysLogininfor.class);
         if (loingor != null) {
             maxLogininforId.set(loingor.getInfoId());
         }
         Query queryOper = new Query().with(Sort.by(Sort.Direction.DESC, "_id")).limit(1);
-        SysOperLog  oper= gameTemplate.findOne(queryOper, SysOperLog.class);
+        SysOperLog oper = mongoTemplate.findOne(queryOper, SysOperLog.class);
         if (oper != null) {
             maxoperId.set(oper.getOperId());
+        }
+        Query queryRoleMenu = new Query().with(Sort.by(Sort.Direction.DESC, "_id")).limit(1);
+        RoleMenu roleMenu = mongoTemplate.findOne(queryRoleMenu, RoleMenu.class);
+        if (roleMenu != null) {
+            maxRoleMenuId.set(roleMenu.getId());
         }
     }
 }

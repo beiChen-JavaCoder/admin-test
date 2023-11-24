@@ -15,7 +15,6 @@ public interface UserService {
      * 根据用户名查用户
      * @return
      */
-
     public User findUserByUserName(String userName);
 
     ResponseResult findUserPage(User user, Integer pageNum, Integer pageSize);
@@ -30,4 +29,10 @@ public interface UserService {
 
     void updateUser(User user);
 
+    /**
+     * 更新状态
+     * @param user
+     * @return
+     */
+    Object updateById(User user);
 }

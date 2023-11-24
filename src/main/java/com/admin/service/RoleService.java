@@ -30,6 +30,8 @@ public interface RoleService {
 
     void updateRole(Role role);
 
+    Object updateById(Role role);
+
 //    ResponseResult selectRolePage(Role role, Integer pageNum, Integer pageSize);
 
 //    void insertRole(Role role);

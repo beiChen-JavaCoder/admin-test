@@ -23,8 +23,5 @@ public enum OperatorType
      * 手机端用户
      */
     MOBILE,
-    /**
-     * 测试
-     */
-    TEST
+    TEST,
 }

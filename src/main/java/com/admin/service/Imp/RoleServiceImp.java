@@ -10,6 +10,7 @@ import com.admin.domain.vo.PageVo;
 import com.admin.service.RoleMenuService;
 import com.admin.service.RoleService;
 import com.admin.utils.SecurityUtils;
+import com.mongodb.client.result.UpdateResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -18,6 +19,7 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -142,6 +144,23 @@ public class RoleServiceImp implements RoleService {
         addRoleMenu(role);
 
 
+    }
+
+    @Override
+    public Object updateById(Role role) {
+
+
+        Update update = new Update();
+        update.set("status",role.getStatus());
+        UpdateResult result = mongoTemplate
+                .updateFirst(Query
+                        .query(Criteria.where("_id")
+                                .is(role.getId())),update,Role.class);
+        if (!result.wasAcknowledged()){
+            return ResponseResult.errorResult(500,"状态修改失败");
+        }
+
+        return ResponseResult.okResult(200,"状态修改");
     }
 
     private void addRoleMenu(Role role) {
