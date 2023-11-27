@@ -52,7 +52,7 @@ public class MenuServiceImpl implements MenuService {
             Query query = new Query();
             query.addCriteria(Criteria.where("menu_type").in(SystemConstants.MENU, SystemConstants.BUTTON));
             query.addCriteria(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
-            query.with(Sort.by(Sort.Direction.ASC,"parent_id","order_num"));
+            query.with(Sort.by(Sort.Direction.ASC, "parent_id", "order_num"));
             List<Menu> menus = mongoTemplate.find(query, Menu.class);
             List<String> perms = menus.stream()
                     .map(Menu::getPerms)
@@ -80,6 +80,7 @@ public class MenuServiceImpl implements MenuService {
         //构建tree
         //先找出第一层的菜单  然后去找他们的子菜单设置到children属性中
         List<Menu> menuTree = builderMenuTree(menus, 0L);
+
         return menuTree;
     }
 
@@ -292,12 +293,14 @@ public class MenuServiceImpl implements MenuService {
                                 .and("status").is("0")
                                 .and("del_flag").is("0")
                 ),
-                Aggregation.project("id", "parent_id", "menu_name", "path", "component", "visible", "status", "is_frame", "menu_type", "icon", "order_num", "create_time")
+                Aggregation.project(
+                                "id", "parent_id", "menu_name", "path", "component", "visible", "status", "is_frame", "menu_type", "icon", "order_num", "create_time"
+                        )
                         .and(ConditionalOperators.Cond.when(Criteria.where("perms").is(null))
                                 .then("")
                                 .otherwiseValueOf("perms"))
-                        .as("perms"));
-        Aggregation.sort(Sort.by(Sort.Direction.ASC, "parent_id", "order_num"));
+                        .as("perms"),
+                Aggregation.sort(Sort.by(Sort.Direction.ASC, "parent_id", "order_num")));
 
         AggregationResults<Menu> results = mongoTemplate.aggregate(aggregation, "sys_menu", Menu.class);
         return results.getMappedResults();

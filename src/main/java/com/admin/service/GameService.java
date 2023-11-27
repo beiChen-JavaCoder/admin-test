@@ -15,6 +15,16 @@ public interface GameService {
      */
     ResponseResult findGamePage(QueryParamsVo queryParamsVo);
 
+    /**
+     * 关闭游戏
+     * @param gameId
+     * @return
+     */
     ResponseResult turnGame(Long gameId);
 
+    /**
+     * 删除游戏
+     * @return
+     */
+    ResponseResult deletGame(Long gameId);
 }

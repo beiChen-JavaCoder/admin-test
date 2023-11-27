@@ -133,50 +133,62 @@ public class RobotServiceImp implements RobotService {
 
     @Override
     public ResponseResult updateRobot(RobotBeanVo robot) {
-
+        Long max = robot.getMax();
+        Long min = robot.getMin();
+        Integer type = robot.getType();
 
         RobotBean robotBean = new RobotBean();
-        if (robot.getMax() != null && robot.getMin() != null) {
+        if (max != null && robot.getMin() != null) {
+            //非下注万分比gameId获取
             robotBean = BeanCopyUtils.copyBean(robot, RobotBean.class);
         }
-        if (RobotBean.Type.initScore.getNum() == (robot.getType())) {
+        if (RobotBean.Type.initScore.getNum() == (type)) {
             //校验参数
-            if (!(robot.getMax() <= 9999999999L && robot.getMin() > 0)) {
+            if (!(max <= 9999999999L && min > 0)) {
                 return ResponseResult.errorResult(500, "请输入合规的参数 最小>0,最大<=99亿");
             }
             robotBean.setType(RobotBean.Type.initScore.getNum());
 
-        } else if (RobotBean.Type.betScore.getNum() == (robot.getType())) {
+        } else if (RobotBean.Type.betScore.getNum() == (type)) {
             //校验参数
-            if (!(robot.getMax() <= 9999999999L && robot.getMin() > 0)) {
+            if (!(max <= 9999999999L && min > 0)) {
                 return ResponseResult.errorResult(500, "请输入合规的参数 最小>0,最大<=99亿");
             }
             robotBean.setType(RobotBean.Type.betScore.getNum());
 
-        } else if (RobotBean.Type.carryScore.getNum() == (robot.getType())) {
+        } else if (RobotBean.Type.carryScore.getNum() == (type)) {
             //校验参数
-            if (!(robot.getMax() <= 9999999999L && robot.getMin() > 0)) {
+            if (!(max <= 9999999999L && min > 0)) {
                 return ResponseResult.errorResult(500, "请输入合规的参数 最小>0,最大<=99亿");
             }
             robotBean.setType(RobotBean.Type.carryScore.getNum());
 
-        } else if (RobotBean.Type.betTime.getNum() == (robot.getType())) {
+        } else if (RobotBean.Type.betTime.getNum() == (type)) {
             //校验参数
-            if (!(robot.getMax() <= 30 && robot.getMin() > 0)) {
+            if (!(robot.getMax() <= 30 && min > 0)) {
                 return ResponseResult.errorResult(500, "请输入合规的参数 最小>1,最大<=30");
             }
 
             robotBean.setMax((robot.getMax()) * 1000);
             robotBean.setMin((robot.getMin()) * 1000);
             robotBean.setType(RobotBean.Type.betTime.getNum());
-        } else if (RobotBean.Type.betRatio.getNum() == (robot.getType())) {
+
+        } else if (RobotBean.Type.betRatio.getNum() == type) {
             //校验参数
-            if (!(robot.getBetRatio() <= 10000 && robot.getBetRatio() > 0)) {
+            if (!(robot.getBetRatio() <= 10000 && robot.getBetRatio()>0)) {
                 return ResponseResult.errorResult(500, "请输入合规的参数 最小>1,最大<=10000");
             }
             robotBean.setType(RobotBean.Type.betRatio.getNum());
             robotBean.setBetRatio(robot.getBetRatio());
             robotBean.setGameId(robot.getGameId());
+        } else if (RobotBean.Type.inRoomNum.getNum() == type) {
+            //校验参数
+            if (!(max <= 10000 && min > 0)) {
+                return ResponseResult.errorResult(500, "请输入合规的参数 最小>1,最大<=10000");
+            }
+            robotBean.setMin(min);
+            robotBean.setMax(max);
+            robotBean.setType(RobotBean.Type.inRoomNum.getNum());
         }
 
         JSONObject json = (JSONObject) JSONObject.toJSON(robotBean);
@@ -225,7 +237,7 @@ public class RobotServiceImp implements RobotService {
     @Override
     public ResponseResult updateRobotName(Robot robot) {
         Long userId = SecurityUtils.getUserId();
-        log.info("用户id:"+userId+"正在删除"+robot.getId()+"号机器人");
+        log.info("用户id:" + userId + "正在删除" + robot.getId() + "号机器人");
         MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
 
         Update update = new Update();
@@ -244,17 +256,17 @@ public class RobotServiceImp implements RobotService {
     @Override
     public ResponseResult delRobot(Long robotId) {
         Long userId = SecurityUtils.getUserId();
-        log.info("用户id:"+userId+"正在删除"+robotId+"号机器人");
+        log.info("用户id:" + userId + "正在删除" + robotId + "号机器人");
         MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
         boolean result = gameTemplate
                 .remove(Query.query(Criteria.where("_id")
                         .is(robotId)), Robot.class)
                 .wasAcknowledged();
         if (result) {
-            log.info("用户id:"+userId+"成功删除"+robotId+"号机器人");
+            log.info("用户id:" + userId + "成功删除" + robotId + "号机器人");
             return ResponseResult.okResult(200, "删除成功");
         }
-        log.info("用户id:"+userId+"删除失败"+robotId+"号机器人");
+        log.info("用户id:" + userId + "删除失败" + robotId + "号机器人");
         return ResponseResult.errorResult(500, "删除失败");
 
     }

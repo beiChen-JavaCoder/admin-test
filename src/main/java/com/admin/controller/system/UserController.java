@@ -110,9 +110,6 @@ public class UserController {
     @PutMapping("/changeStatus")
     public ResponseResult changeStatus(@RequestBody ChangeUserStatusDto userStatusDto) {
 
-        User user = new User();
-        user.setId(userStatusDto.getUserId());
-        user.setStatus(userStatusDto.getStatus());
-        return ResponseResult.okResult(userService.updateById(user));
+        return ResponseResult.okResult(userService.updateById(userStatusDto));
     }
 }

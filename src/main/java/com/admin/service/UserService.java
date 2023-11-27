@@ -1,9 +1,8 @@
 package com.admin.service;
 
 import com.admin.domain.ResponseResult;
-import com.admin.domain.entity.MerchantEntity;
+import com.admin.domain.dto.ChangeUserStatusDto;
 import com.admin.domain.entity.User;
-import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.UserAndMerchantVo;
 
 import java.util.List;
@@ -34,5 +33,5 @@ public interface UserService {
      * @param user
      * @return
      */
-    Object updateById(User user);
+    Object updateById(ChangeUserStatusDto user);
 }

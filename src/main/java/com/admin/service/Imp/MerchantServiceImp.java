@@ -164,9 +164,9 @@ public class MerchantServiceImp implements MerchantService {
 
         Query query = Query.query(Criteria.where("_id").is(userId));
         Long merchantEntId = mongoTemplate.findOne(query, User.class).getMerchantEntId();
-
-        return mongoTemplate
-                .findOne(Query.query(Criteria
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+        return
+                gameTemplate.findOne(Query.query(Criteria
                         .where("_id").is(merchantEntId)), MerchantEntity.class);
     }
 

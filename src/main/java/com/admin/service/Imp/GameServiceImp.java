@@ -17,7 +17,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,12 +38,27 @@ public class GameServiceImp implements GameService {
 
     @Override
     public ResponseResult findGamePage(QueryParamsVo queryParamsVo) {
-        String gameName = queryParamsVo.getAttribute("gameName");
+
+
         Integer pageNum = Integer.valueOf(queryParamsVo.getAttribute("pageNum"));
         Integer pageSize = Integer.valueOf(queryParamsVo.getAttribute("pageSize"));
         MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
 
         Criteria criteria = new Criteria();
+        ArrayList<Criteria> criteriaList = new ArrayList<>();
+        //游戏名称
+        if (StringUtils.hasText(queryParamsVo.getAttribute("gameName"))) {
+            String gameName = queryParamsVo.getAttribute("gameName");
+            criteriaList.add(Criteria.where("gameName").is(gameName));
+        }
+        //状态
+        if (StringUtils.hasText(queryParamsVo.getAttribute("active"))) {
+            Boolean active = Boolean.valueOf(queryParamsVo.getAttribute("active"));
+            criteriaList.add(Criteria.where("IsActive").is(active));
+        }
+        if (!criteriaList.isEmpty()) {
+            criteria.andOperator(criteriaList.toArray(new Criteria[0]));
+        }
         Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by("_id"));
         Query query = Query.query(criteria).with(pageable);
 
@@ -61,14 +78,28 @@ public class GameServiceImp implements GameService {
     public ResponseResult turnGame(Long gameId) {
 
         //发起修改关闭游戏通知
-        boolean remsg = notification.gameOut(gameId);
+        boolean remsg = notification.updateGame(gameId, 0);
         if (remsg) {
-        log.info("关闭游戏id:"+gameId+"成功(通知失败)");
-            return ResponseResult.okResult(200,"关闭游戏成功");
+            log.info("关闭游戏id:" + gameId + "成功");
+            return ResponseResult.okResult(200, "关闭游戏成功");
         }
-        log.error("关闭游戏id:"+gameId+"成功(通知失败)");
-        return  ResponseResult.errorResult(500,"关闭游戏失败(通知失败)");
+        log.error("关闭游戏id:" + gameId + "成功(通知失败)");
+        return ResponseResult.errorResult(500, "关闭游戏失败(通知失败)");
 
 
+    }
+
+    @Override
+    public ResponseResult deletGame(Long gameId) {
+
+        //发情删除游戏通知
+        boolean reDelet = notification.updateGame(gameId, 1);
+
+        if (reDelet) {
+            log.info("关闭游戏id:" + gameId + "成功");
+            return ResponseResult.okResult(200, "删除成功！");
+        }
+        log.error("关闭游戏id:" + gameId + "成功(通知失败)");
+        return ResponseResult.errorResult(500, "删除失败");
     }
 }

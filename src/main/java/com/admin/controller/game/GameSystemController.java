@@ -7,6 +7,7 @@ import com.admin.enums.BusinessType;
 import com.admin.notification.Notification;
 import com.admin.service.GameService;
 import com.admin.utils.SecurityUtils;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -30,16 +31,16 @@ public class GameSystemController {
      * 删库（游戏）接口
      * @return
      */
-    @Log(title = "关闭游戏",businessType = BusinessType.DELETE)
+    @Log(title = "关闭游戏",businessType = BusinessType.UPDATE)
     @GetMapping("{gameId}")
-    public ResponseResult downlineGame(@PathVariable Long gameId) {
+    public ResponseResult turnGame(@PathVariable Long gameId) {
 
 
         log.info("管理员:1正在对游戏"+gameId.toString()+"执行关闭操作,请谨慎操作");
         if (SecurityUtils.isAdmin()) {
         return gameService.turnGame(gameId);
         }
-        return ResponseResult.okResult();
+        return ResponseResult.okResult(500,"无权限操作,请联系管理员");
     }
     @PostMapping
     public ResponseResult getList(@RequestBody QueryParamsVo queryParamsVo){
@@ -48,6 +49,12 @@ public class GameSystemController {
         return gameService.findGamePage(queryParamsVo);
 
 
+    }
+    @Log(title = "删除游戏",businessType = BusinessType.DELETE)
+    @ApiOperation("删除游戏")
+    @DeleteMapping()
+    public ResponseResult deletGame(@PathVariable Long gameId){
+        return gameService.deletGame(gameId);
     }
 
 

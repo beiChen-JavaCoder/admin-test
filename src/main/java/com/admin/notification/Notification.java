@@ -1,5 +1,7 @@
 package com.admin.notification;
 
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import com.admin.domain.dto.MerchantDto;
 import com.admin.enums.MerchantTypeEnum;
@@ -257,15 +259,29 @@ public class Notification {
     }
 
     /**
-     * 游戏关闭
-     * @return
+     * 修改游戏（关闭删除）
+     * type：0,关闭 1,删除
+     * @return 成功/失败
      */
-    public boolean gameOut(Long gameId){
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("gameId",gameId);
-        JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(TURN_GAME,jsonObject));
-        log.info(parse.toString());
-        if (0 == (Integer) parse.get("errcode")) {
+    public boolean updateGame(Long gameId,Integer type){
+
+        String url = new String();
+        if (type == 0){
+            url = TURN_GAME;
+        } else if (type == 1) {
+            url = DELETE_GAME;
+        }
+
+        // 发送POST请求
+        HttpRequest request = HttpRequest.post(url)
+                .body(gameId.toString())  // 将Long型数字转换为字符串并设置为请求体
+                .header("Content-Type", "application/json")
+                .timeout(3000);  // 设置请求头
+        JSONObject body = (JSONObject) JSONObject.parse(request.execute().body());
+
+        // 接收响应
+        log.info(request.toString());
+        if (0 == (Integer) body.get("errcode")) {
             return true;
         }
         return false;
@@ -286,4 +302,6 @@ public class Notification {
         TURN_GAME = "http://" + ipPort + "/system/gameClose";
         DELETE_GAME = "http://" + ipPort + "/system/dbClean";
     }
+
+
 }

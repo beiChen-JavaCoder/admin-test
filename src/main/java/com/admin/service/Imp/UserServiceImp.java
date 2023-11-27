@@ -1,26 +1,23 @@
 package com.admin.service.Imp;
 
-import cn.hutool.core.date.DateUtil;
 import com.admin.component.IdManager;
+import com.admin.config.MongoUtil;
 import com.admin.domain.ResponseResult;
-import com.admin.domain.dto.MerchantDto;
-import com.admin.domain.entity.MerchantBean;
+import com.admin.domain.dto.ChangeUserStatusDto;
 import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.entity.User;
 import com.admin.domain.entity.UserRole;
-import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.PageVo;
 import com.admin.domain.vo.UserAndMerchantVo;
 import com.admin.enums.AppHttpCodeEnum;
-import com.admin.enums.MerchantTypeEnum;
 import com.admin.enums.UserTypeEnum;
 import com.admin.exception.SystemException;
-import com.admin.notification.Notification;
 import com.admin.service.MerchantService;
 import com.admin.service.UserRoleService;
 import com.admin.service.UserService;
 import com.admin.utils.BeanCopyUtils;
 import com.admin.utils.SecurityUtils;
+import com.mongodb.client.result.UpdateResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -33,14 +30,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 
 @Service
 @Slf4j
@@ -51,8 +45,8 @@ public class UserServiceImp implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private UserRoleService userRoleService;
+@Autowired
+private MongoUtil mongoUtil;
 
     @Autowired
     private IdManager idManager;
@@ -119,10 +113,14 @@ public class UserServiceImp implements UserService {
         User user = BeanCopyUtils.copyBean(userAndMerchantVo, User.class);
         MerchantEntity merchantEntity = BeanCopyUtils.copyBean(userAndMerchantVo, MerchantEntity.class);
 
-        merchantEntity.setId(idManager.getMaxMerchantId().incrementAndGet());
         try {
             //新增商户
             merchantService.addMerchant(merchantEntity);
+            MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+            MerchantEntity reMerchant = gameTemplate.findOne(Query.query(Criteria.where("name")
+                    .is(merchantEntity.getMerchantName())), MerchantEntity.class);
+            //给用户绑定商户id
+            user.setMerchantEntId(reMerchant.getId());
         } catch (Exception e) {
             throw new SystemException(AppHttpCodeEnum.ADD_USER_MERCHANT_NO);
         }
@@ -135,8 +133,7 @@ public class UserServiceImp implements UserService {
             } else if ((type + "").equals(UserTypeEnum.common.getCode())) {
                 user.setType(type + "");
                 user.setType(UserTypeEnum.common.getCode() + "");
-                //给用户绑定商户id
-                user.setMerchantEntId(merchantEntity.getId());
+
             }
 
         }
@@ -208,21 +205,32 @@ public class UserServiceImp implements UserService {
             // 如果password不为空，则添加加密更新操作
             update.set("password", passwordEncoder.encode(user.getPassword()));
         }
+        //修改状态
+        if (user.getStatus() != null) {
+            update.set("status", user.getStatus());
+
+        }
         update.set("updateTime", new Date());
+        update.set("updateBy",SecurityUtils.getUserId());
+
         mongoTemplate.updateFirst(updateQuery, update, User.class);
     }
 
     @Override
-    public Object updateById(User userDto) {
+    public Object updateById(ChangeUserStatusDto changeUserStatusDto) {
 
-        User user = mongoTemplate
-                .findOne(Query.query(Criteria.where("_id").is(userDto.getId())), User.class);
-        user.setStatus(userDto.getStatus());
-        User reUser = mongoTemplate.save(user);
-        if (reUser == null) {
-            return ResponseResult.errorResult(500, "修改玩家状态失败");
+        Update update = new Update();
+        Update status = update.set("status", changeUserStatusDto.getStatus());
+
+        UpdateResult updateResult = mongoTemplate.updateFirst(Query
+                .query(Criteria.where("_id").is(changeUserStatusDto.getUserId())), status, User.class);
+        if (updateResult.wasAcknowledged() && updateResult.getMatchedCount() > 0) {
+            return ResponseResult.okResult(200, "修改玩家状态成功");
+
         }
-        return ResponseResult.okResult(200, "修改玩家状态成功");
+
+        return ResponseResult.errorResult(500, "修改玩家状态失败");
+
     }
 
 
