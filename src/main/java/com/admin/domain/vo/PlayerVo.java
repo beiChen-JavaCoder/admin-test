@@ -26,7 +26,6 @@ public class PlayerVo {
     private JSONObject winningLosing;
     //注册时间
     private JSONObject recharge;
-
     private Integer pageNum;
     private Integer isOnline;
 

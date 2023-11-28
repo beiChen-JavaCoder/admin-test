@@ -8,8 +8,11 @@ import com.admin.domain.vo.PageVo;
 import com.admin.domain.vo.QueryParamsVo;
 import com.admin.notification.Notification;
 import com.admin.service.GameService;
+import com.admin.utils.PageUtils;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,6 +24,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Xqf
@@ -42,34 +47,33 @@ public class GameServiceImp implements GameService {
 
         Integer pageNum = Integer.valueOf(queryParamsVo.getAttribute("pageNum"));
         Integer pageSize = Integer.valueOf(queryParamsVo.getAttribute("pageSize"));
-        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
 
-        Criteria criteria = new Criteria();
-        ArrayList<Criteria> criteriaList = new ArrayList<>();
-        //游戏名称
-        if (StringUtils.hasText(queryParamsVo.getAttribute("gameName"))) {
-            String gameName = queryParamsVo.getAttribute("gameName");
-            criteriaList.add(Criteria.where("gameName").is(gameName));
+        List<JSONObject> gameList = notification.findGameList();
+        if (gameList.isEmpty()) {
+            return ResponseResult.errorResult(500, "游戏端异常");
         }
-        //状态
-        if (StringUtils.hasText(queryParamsVo.getAttribute("active"))) {
-            Boolean active = Boolean.valueOf(queryParamsVo.getAttribute("active"));
-            criteriaList.add(Criteria.where("IsActive").is(active));
-        }
-        if (!criteriaList.isEmpty()) {
-            criteria.andOperator(criteriaList.toArray(new Criteria[0]));
-        }
-        Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by("_id"));
-        Query query = Query.query(criteria).with(pageable);
+        PageUtils pageUtils = new PageUtils();
+        List<JSONObject> games = pageUtils.getPages(gameList, pageNum, pageSize);
 
-        List<GameInfo> gameInfos = gameTemplate.find(query, GameInfo.class);
-        //查询总数
-        long total = gameTemplate.count(Query.of(query).limit(-1).skip(-1), GameInfo.class);
+        List<JSONObject> reGames = games.stream()
+                .filter(game -> {
+                    String gameName = queryParamsVo.getAttribute("gameName");
+                    String active = queryParamsVo.getAttribute("active");
+
+                    boolean isGameNameMatched = gameName == null || gameName.isEmpty() || gameName.equals(game.getString("gameName"));
+                    boolean isActiveMatched = active == null || active.equals(game.getString("active"));
+
+                    return (isGameNameMatched && isActiveMatched) ||
+                            (isGameNameMatched && active == null) ||
+                            (gameName == null && isActiveMatched) ||
+                            (gameName == null && active == null);
+                })
+                .collect(Collectors.toList());
 
         //封装返回对象
         PageVo pageVo = new PageVo();
-        pageVo.setRows(gameInfos);
-        pageVo.setTotal(total);
+        pageVo.setRows(reGames);
+        pageVo.setTotal(Long.valueOf(gameList.size()));
 
         return ResponseResult.okResult(pageVo);
     }

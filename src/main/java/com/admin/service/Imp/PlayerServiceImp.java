@@ -33,10 +33,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Xqf
@@ -52,7 +49,6 @@ public class PlayerServiceImp implements PlayerService {
     private MongoTemplate mongoTemplate;
     @Autowired
     private Notification notification;
-
 
     @Override
     public ResponseResult<PageVo> findPlayerRechargePage(PlayerRechargeVo playerRechargeVo, Integer pageNum, Integer pageSize) {
@@ -244,7 +240,7 @@ public class PlayerServiceImp implements PlayerService {
         }
         //封装分页参数
         //创建分页请求和排序，默认按time_stamp升序
-        Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by("time_stamp"));
+        Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by(Sort.Direction.DESC,"time_stamp"));
         //创建查询对象
         Query query = Query.query(criteria).with(pageable);
         List<CoinLog> coinLogs = gameTemplate.find(query, CoinLog.class);
@@ -265,6 +261,82 @@ public class PlayerServiceImp implements PlayerService {
         //封装数据返回
         PageVo pageVo = new PageVo();
         pageVo.setRows(flowVos);
+        pageVo.setTotal(total);
+
+        return ResponseResult.okResult(pageVo);
+    }
+
+    @Override
+    public ResponseResult findTallagePage(RevenueVo revenueVo) {
+
+        int pageNum = revenueVo.getPageNum();
+        int pageSize = revenueVo.getPageSize();
+
+
+        ArrayList<Criteria> criteriaList = new ArrayList<>();
+
+        Criteria criteria = new Criteria();
+        //过滤税收
+        criteria.and("key").is("税收扣除");
+
+        //添加时间区间搜索条件
+        HashMap<String, Object> searchTime= revenueVo.getSearchTime();
+        //添加时间区间搜索条件
+        if (searchTime != null) {
+
+            ArrayList<String> strings = new ArrayList<>();
+            for (Object s : new ArrayList<>()) {
+                // 创建 DateTimeFormatter 对象，指定日期时间格式
+                DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
+                // 将时间字符串解析为 LocalDateTime 对象
+                LocalDateTime utcDateTime = LocalDateTime.parse(String.valueOf(s), formatter);
+
+                // 获取中国时区
+                ZoneId chinaZone = ZoneId.of("Asia/Shanghai");
+
+                // 将 LocalDateTime 转换为 ZonedDateTime 对象，并应用中国时区
+                ZonedDateTime chinaDateTime = utcDateTime.atZone(ZoneOffset.UTC).withZoneSameInstant(chinaZone);
+
+                // 格式化为中国时区的时间字符串
+                String chinaTimeString = chinaDateTime.format(formatter);
+                strings.add(chinaTimeString);
+            }
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); // 定义日期格式
+            try {
+                Date startDate = dateFormat.parse(strings.get(0)); // 将字符串解析为日期对象
+                long startStamp = startDate.getTime(); // 获取时间戳
+                Date endDate = dateFormat.parse(strings.get(1));
+                long endStamp = endDate.getTime();
+                criteriaList.add(Criteria.where("time_stamp").gte(startStamp).lte(endStamp));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (!criteriaList.isEmpty()) {
+            criteria.andOperator(criteriaList.toArray(new Criteria[0]));
+        }
+        //封装分页参数
+        //创建分页请求和排序，默认按time_stamp升序
+        Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by(Sort.Direction.DESC,"time_stamp"));
+        //创建查询对象
+        Query query = Query.query(criteria).with(pageable);
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+        List<CoinLog> coinLogs = gameTemplate.find(query, CoinLog.class);
+        List<RevenueVo> revenueVos = BeanCopyUtils.copyBeanList(coinLogs, RevenueVo.class);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // 定义日期格式
+        revenueVos.forEach(revenue -> {
+            coinLogs.forEach(coinLog -> {
+                Long timeStamp = coinLog.getTimeStamp();
+                //转换时间戳
+                revenue.setSectionTime(dateFormat.format(new Date(timeStamp)));
+            });
+        });
+        //查询总数
+        long total = gameTemplate.count(Query.of(query).limit(-1).skip(-1), CoinLog.class);
+        //封装数据返回
+        PageVo pageVo = new PageVo();
+        pageVo.setRows(revenueVos);
         pageVo.setTotal(total);
 
         return ResponseResult.okResult(pageVo);

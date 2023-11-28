@@ -34,4 +34,10 @@ public interface PlayerService {
      */
     ResponseResult findFlowPage(QueryParamsVo queryParamsVo);
 
+    /**
+     * 税收列表
+     * @param revenueVo
+     * @return
+     */
+    ResponseResult findTallagePage(RevenueVo revenueVo);
 }

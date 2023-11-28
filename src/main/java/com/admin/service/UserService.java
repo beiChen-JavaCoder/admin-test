@@ -2,6 +2,7 @@ package com.admin.service;
 
 import com.admin.domain.ResponseResult;
 import com.admin.domain.dto.ChangeUserStatusDto;
+import com.admin.domain.dto.BingUserMerchantDto;
 import com.admin.domain.entity.User;
 import com.admin.domain.vo.UserAndMerchantVo;
 
@@ -34,4 +35,11 @@ public interface UserService {
      * @return
      */
     Object updateById(ChangeUserStatusDto user);
+
+    /**
+     * 绑定商户
+     * @param userMerchantDto
+     * @return
+     */
+    ResponseResult bindingMerchant(BingUserMerchantDto userMerchantDto);
 }

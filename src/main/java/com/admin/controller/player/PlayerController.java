@@ -3,6 +3,7 @@ package com.admin.controller.player;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.vo.PlayerVo;
 import com.admin.domain.vo.QueryParamsVo;
+import com.admin.domain.vo.RevenueVo;
 import com.admin.service.PlayerService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,5 +32,8 @@ public class PlayerController {
         return playerService.findFlowPage(queryParamsVo);
      }
 
-
+    @PostMapping("/revenue")
+    public ResponseResult getRevenue(@RequestBody RevenueVo revenueVo) {
+        return playerService.findTallagePage(revenueVo);
+    }
 }

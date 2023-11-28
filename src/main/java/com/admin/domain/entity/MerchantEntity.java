@@ -46,5 +46,10 @@ public class MerchantEntity {
      */
     @Column(name = "gold")
     Long gold;
+    /**
+     * 渠道
+     */
+    @Column(name = "channel")
+    Long channel;
 
 }

@@ -44,7 +44,6 @@ public class CoinLog {
      */
     @Field("gameid")
     private Long gameId;
-
     /**
      *
      */

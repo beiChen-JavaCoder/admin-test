@@ -12,6 +12,8 @@ import com.admin.enums.MerchantTypeEnum;
 import com.admin.notification.Notification;
 import com.admin.service.MerchantService;
 import com.admin.utils.SecurityUtils;
+import com.alibaba.fastjson2.JSONObject;
+import com.mongodb.client.result.UpdateResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -150,6 +153,16 @@ public class MerchantServiceImp implements MerchantService {
         String remsg = notification.notificationMerchant(merchantDto);
 
         if (deletedCount > 0 && "0".equals(remsg)) {
+            //判斷商戶已被刪除，并且對用戶信息進行更新
+            Update update = new Update();
+            update.set("merchantEnt_id","");
+            UpdateResult updateResult = mongoTemplate
+                    .updateMulti(Query.query(Criteria.where("merchantEnt_id").in(ids)),
+                            update, User.class);
+            if (!updateResult.wasAcknowledged()&&updateResult.getMatchedCount()>0){
+                return ResponseResult.errorResult(500,"刪除用戶綁定商戶信息");
+            }
+
             log.info("用户id：" + userId + "删除了商户" + merchantDto);
             log.info("删除成功", "并且发送通知");
 
@@ -168,6 +181,22 @@ public class MerchantServiceImp implements MerchantService {
         return
                 gameTemplate.findOne(Query.query(Criteria
                         .where("_id").is(merchantEntId)), MerchantEntity.class);
+    }
+
+    @Override
+    public ResponseResult findMerchantByUserId() {
+
+        Long userId = SecurityUtils.getUserId();
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+        User user = mongoTemplate.findById(userId, User.class);
+        MerchantEntity merchant = gameTemplate
+                .findOne(Query.query(Criteria
+                        .where("_id").is(user.getMerchantEntId())), MerchantEntity.class);
+
+        if (merchant==null){
+            return ResponseResult.errorResult(500,"当前用户未绑定商户");
+        }
+        return ResponseResult.okResult(merchant);
     }
 
 

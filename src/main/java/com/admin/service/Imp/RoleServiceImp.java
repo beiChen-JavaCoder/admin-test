@@ -291,9 +291,6 @@ public class RoleServiceImp implements RoleService {
                     return roleKeys.stream();
                 })
                 .collect(Collectors.toList());
-
-        log.info(String.valueOf(reRoleKeys));
-
         return reRoleKeys;
     }
 }

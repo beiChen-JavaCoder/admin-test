@@ -1,32 +1,26 @@
 package com.admin.controller.system;
 
 import com.admin.annotation.Log;
-import com.admin.component.IdManager;
 import com.admin.domain.ResponseResult;
-import com.admin.domain.dto.ChangeRoleStatusDto;
 import com.admin.domain.dto.ChangeUserStatusDto;
-import com.admin.domain.entity.MerchantBean;
+import com.admin.domain.dto.BingUserMerchantDto;
 import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.entity.Role;
 import com.admin.domain.entity.User;
-import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.UserAndMerchantVo;
 import com.admin.domain.vo.UserInfoAndRoleIdsVo;
 import com.admin.enums.AppHttpCodeEnum;
 import com.admin.enums.BusinessType;
-import com.admin.enums.UserTypeEnum;
 import com.admin.exception.SystemException;
 import com.admin.service.MerchantService;
 import com.admin.service.RoleInfoService;
 import com.admin.service.UserService;
-import com.admin.utils.BeanCopyUtils;
 import com.admin.utils.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
 import java.util.List;
 
 @Api("用户模块")
@@ -111,5 +105,19 @@ public class UserController {
     public ResponseResult changeStatus(@RequestBody ChangeUserStatusDto userStatusDto) {
 
         return ResponseResult.okResult(userService.updateById(userStatusDto));
+    }
+    @Log(title = "绑定商户",businessType = BusinessType.UPDATE)
+    @ApiOperation("绑定商户")
+    @PutMapping("/binding")
+    public ResponseResult bingMerchant(@RequestBody BingUserMerchantDto userMerchantDto){
+
+        if (userMerchantDto.getUserId()==null&&userMerchantDto.getMerchantId()==null) {
+
+        return ResponseResult.errorResult(500,"商户id不能为空");
+        }
+
+        return userService.bindingMerchant(userMerchantDto);
+
+
     }
 }

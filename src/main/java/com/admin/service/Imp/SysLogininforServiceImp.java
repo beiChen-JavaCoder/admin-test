@@ -3,6 +3,7 @@ package com.admin.service.Imp;
 import com.admin.component.IdManager;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.SysLogininfor;
+import com.admin.domain.entity.User;
 import com.admin.domain.vo.PageVo;
 import com.admin.domain.vo.QueryParamsVo;
 import com.admin.service.SysLogininforService;
@@ -89,9 +90,9 @@ public class SysLogininforServiceImp implements SysLogininforService {
         //执行查询
         List<SysLogininfor> logininfors = mongoTemplate.find(query, SysLogininfor.class);
         //查询总数
-        long count = mongoTemplate.count(query, SysLogininfor.class);
+        long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), SysLogininfor.class);
         PageVo pageVo = new PageVo();
-        pageVo.setTotal(count);
+        pageVo.setTotal(total);
         pageVo.setRows(logininfors);
 
 

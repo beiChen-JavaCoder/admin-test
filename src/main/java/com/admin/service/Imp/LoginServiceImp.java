@@ -8,6 +8,7 @@ import com.admin.domain.entity.User;
 import com.admin.domain.vo.UserInfoVo;
 import com.admin.domain.vo.adminUserLoginVo;
 import com.admin.enums.AppHttpCodeEnum;
+import com.admin.enums.UserStatusEnum;
 import com.admin.exception.SystemException;
 import com.admin.factory.AsyncFactory;
 import com.admin.manager.AsyncManager;
@@ -48,6 +49,14 @@ public class LoginServiceImp implements LoginService {
             AuthenticationContextHolder.setContext(authenticationToken);
             // 该方法会去调用UserDetailsServiceImpl.loadUserByUsername
             authentication = authenticationManager.authenticate(authenticationToken);
+            LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+
+            //当登陆账号为禁用是直接返回提示信息
+            if(loginUser.getUser() != null&& loginUser.getUser().getStatus().equals(UserStatusEnum.DEACTIVATE.getCode())){
+                return  ResponseResult.errorResult(500,"账号已被禁用，请联系管理员");
+            }
+
+
         } catch (Exception e) {
             if (e instanceof BadCredentialsException) {
                 //用户名或密码无效或不匹配错误

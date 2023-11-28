@@ -85,7 +85,12 @@ public class Notification {
     /**
      * 删除游戏
      */
-    private  String DELETE_GAME;
+    private String DELETE_GAME;
+    /**
+     * 游戏列表
+     */
+    private String LIST_GAME;
+
     /**
      * 商户相关请求
      *
@@ -208,11 +213,12 @@ public class Notification {
 
     /**
      * 机器人列表请求
+     *
      * @return
      */
     public List<JSONObject> getRobotList() {
 
-        Object parse = JSONArray.parse(HttpUtil.post(ROBOT_INFO_GET,""));
+        Object parse = JSONArray.parse(HttpUtil.post(ROBOT_INFO_GET, ""));
 
         JSONArray jsonArray = JSONArray.parseArray(parse.toString());
         ArrayList<JSONObject> jsonObjects = new ArrayList<>();
@@ -232,6 +238,7 @@ public class Notification {
 
     /**
      * 修改机器人控制请求
+     *
      * @param jsonObject
      * @return
      */
@@ -250,7 +257,7 @@ public class Notification {
      */
     public String updateRobotName() {
 
-        JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(ROBOT_NAME_UPDATEL,""));
+        JSONObject parse = (JSONObject) JSON.parse(HttpUtil.post(ROBOT_NAME_UPDATEL, ""));
         log.info(parse.toString());
         if (0 == (Integer) parse.get("errcode")) {
             return "0";
@@ -261,12 +268,13 @@ public class Notification {
     /**
      * 修改游戏（关闭删除）
      * type：0,关闭 1,删除
+     *
      * @return 成功/失败
      */
-    public boolean updateGame(Long gameId,Integer type){
+    public boolean updateGame(Long gameId, Integer type) {
 
         String url = new String();
-        if (type == 0){
+        if (type == 0) {
             url = TURN_GAME;
         } else if (type == 1) {
             url = DELETE_GAME;
@@ -286,6 +294,23 @@ public class Notification {
         }
         return false;
     }
+
+    public List<JSONObject> findGameList() {
+
+        Object parse = JSONArray.parse(HttpUtil.post(LIST_GAME, ""));
+
+        JSONObject jsonObject = (JSONObject) JSONObject.parse(parse.toString());
+        JSONArray infos = JSONArray.parseArray(String.valueOf(jsonObject.get("infos")));
+        ArrayList<JSONObject> jsonObjects = new ArrayList<>();
+        for (Object reGame : infos) {
+            jsonObjects.add((JSONObject) reGame);
+        }
+
+        return jsonObjects;
+
+
+    }
+
     @PostConstruct
     public void init() {
         MERCHANT_LIST_CHANGE = "http://" + ipPort + "/hall/merchant/merchantListChange";
@@ -301,6 +326,9 @@ public class Notification {
         ROBOT_NAME_UPDATEL = "http://" + ipPort + "/robot/namesChange";
         TURN_GAME = "http://" + ipPort + "/system/gameClose";
         DELETE_GAME = "http://" + ipPort + "/system/dbClean";
+        LIST_GAME = "http://" + ipPort + "/system/getGameInfos";
+
+
     }
 
 

@@ -40,4 +40,5 @@ public interface MerchantService {
      * @return
      */
     MerchantEntity findMerchantByUserId(Long userId);
+    ResponseResult findMerchantByUserId();
 }

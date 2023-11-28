@@ -6,6 +6,7 @@ import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.PageVo;
+import com.admin.domain.vo.RevenueVo;
 import com.admin.enums.AppHttpCodeEnum;
 import com.admin.enums.BusinessType;
 import com.admin.service.MerchantService;
@@ -62,5 +63,10 @@ public class MerchantController {
 
         MerchantEntity merchantEntity = BeanCopyUtils.copyBean(merchantVo, MerchantEntity.class);
         return merchantService.addMerchant(merchantEntity);
+    }
+    @ApiOperation("获取商户税收百分比")
+    @GetMapping("/merchantRatio")
+    public ResponseResult getMerchant() {
+        return merchantService.findMerchantByUserId();
     }
 }

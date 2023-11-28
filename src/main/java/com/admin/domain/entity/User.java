@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -61,6 +62,7 @@ public class User implements Serializable {
     private Long[] roleIds;
     //关联绑定商户
     @Field("merchantEnt_id")
+    @Indexed(unique = true)
     private Long merchantEntId;
 
 }

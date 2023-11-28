@@ -4,6 +4,7 @@ import com.admin.component.IdManager;
 import com.admin.config.MongoUtil;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.dto.ChangeUserStatusDto;
+import com.admin.domain.dto.BingUserMerchantDto;
 import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.entity.User;
 import com.admin.domain.entity.UserRole;
@@ -13,7 +14,6 @@ import com.admin.enums.AppHttpCodeEnum;
 import com.admin.enums.UserTypeEnum;
 import com.admin.exception.SystemException;
 import com.admin.service.MerchantService;
-import com.admin.service.UserRoleService;
 import com.admin.service.UserService;
 import com.admin.utils.BeanCopyUtils;
 import com.admin.utils.SecurityUtils;
@@ -45,8 +45,8 @@ public class UserServiceImp implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-@Autowired
-private MongoUtil mongoUtil;
+    @Autowired
+    private MongoUtil mongoUtil;
 
     @Autowired
     private IdManager idManager;
@@ -119,6 +119,7 @@ private MongoUtil mongoUtil;
             MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
             MerchantEntity reMerchant = gameTemplate.findOne(Query.query(Criteria.where("name")
                     .is(merchantEntity.getMerchantName())), MerchantEntity.class);
+
             //给用户绑定商户id
             user.setMerchantEntId(reMerchant.getId());
         } catch (Exception e) {
@@ -211,7 +212,7 @@ private MongoUtil mongoUtil;
 
         }
         update.set("updateTime", new Date());
-        update.set("updateBy",SecurityUtils.getUserId());
+        update.set("updateBy", SecurityUtils.getUserId());
 
         mongoTemplate.updateFirst(updateQuery, update, User.class);
     }
@@ -232,6 +233,33 @@ private MongoUtil mongoUtil;
         return ResponseResult.errorResult(500, "修改玩家状态失败");
 
     }
+
+    @Override
+    public ResponseResult bindingMerchant(BingUserMerchantDto userMerchantDto) {
+
+        User user = mongoTemplate.findOne(Query.query(Criteria.where("_id").is(userMerchantDto.getUserId())), User.class);
+        Long merchantId = userMerchantDto.getMerchantId();
+        MerchantEntity merchant = mongoUtil.getGameTemplate().findOne(
+                Query.query(
+                        Criteria.where("_id").is(merchantId)), MerchantEntity.class);
+
+        if (user != null && merchant != null) {
+            user.setMerchantEntId(merchantId);
+            User save = mongoTemplate.save(user);
+
+            return ResponseResult.okResult(200,"绑定成功，修改"+save);
+
+        }
+        String msg = new String();
+        if (merchant==null){
+            msg = "绑定失败商户不存在！";
+        }
+        if (user==null){
+            msg = "绑定失败用户不存在！";
+
+        }
+        return ResponseResult.okResult(500,msg);
+}
 
 
     private void insertUserRole(User user) {
