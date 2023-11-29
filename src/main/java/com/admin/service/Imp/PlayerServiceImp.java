@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -267,7 +268,7 @@ public class PlayerServiceImp implements PlayerService {
     }
 
     @Override
-    public ResponseResult findTallagePage(RevenueVo revenueVo) {
+    public ResponseResult findRevenuePage(RevenueVo revenueVo) {
 
         int pageNum = revenueVo.getPageNum();
         int pageSize = revenueVo.getPageSize();
@@ -280,12 +281,12 @@ public class PlayerServiceImp implements PlayerService {
         criteria.and("key").is("税收扣除");
 
         //添加时间区间搜索条件
-        HashMap<String, Object> searchTime= revenueVo.getSearchTime();
+        JSONArray searchTime = (JSONArray)revenueVo.getSearchTime().get("searchTime");
         //添加时间区间搜索条件
         if (searchTime != null) {
 
-            ArrayList<String> strings = new ArrayList<>();
-            for (Object s : new ArrayList<>()) {
+            ArrayList<String> dates = new ArrayList<>();
+            for (Object s : searchTime) {
                 // 创建 DateTimeFormatter 对象，指定日期时间格式
                 DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
@@ -300,18 +301,21 @@ public class PlayerServiceImp implements PlayerService {
 
                 // 格式化为中国时区的时间字符串
                 String chinaTimeString = chinaDateTime.format(formatter);
-                strings.add(chinaTimeString);
+                dates.add(chinaTimeString);
             }
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); // 定义日期格式
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+
             try {
-                Date startDate = dateFormat.parse(strings.get(0)); // 将字符串解析为日期对象
-                long startStamp = startDate.getTime(); // 获取时间戳
-                Date endDate = dateFormat.parse(strings.get(1));
-                long endStamp = endDate.getTime();
+                //解析查询日期为时间戳判断范围
+                LocalDateTime startDate = LocalDateTime.parse(dates.get(0), formatter);
+                LocalDateTime endDate = LocalDateTime.parse(dates.get(1), formatter);
+                long startStamp = startDate.toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+                long endStamp = endDate.toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
                 criteriaList.add(Criteria.where("time_stamp").gte(startStamp).lte(endStamp));
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
+
         }
         if (!criteriaList.isEmpty()) {
             criteria.andOperator(criteriaList.toArray(new Criteria[0]));
@@ -325,16 +329,18 @@ public class PlayerServiceImp implements PlayerService {
         List<CoinLog> coinLogs = gameTemplate.find(query, CoinLog.class);
         List<RevenueVo> revenueVos = BeanCopyUtils.copyBeanList(coinLogs, RevenueVo.class);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // 定义日期格式
-        revenueVos.forEach(revenue -> {
-            coinLogs.forEach(coinLog -> {
-                Long timeStamp = coinLog.getTimeStamp();
-                //转换时间戳
-                revenue.setSectionTime(dateFormat.format(new Date(timeStamp)));
-            });
-        });
+        // 遍历 coinLogs 和 revenueVos
+        for (int i = 0; i < coinLogs.size() && i < revenueVos.size(); i++) {
+            CoinLog coinLog = coinLogs.get(i);
+            RevenueVo revenue = revenueVos.get(i);
+
+            // 将 coinLog 的 timeStamp 复制到 revenue 的 sectionTime
+            revenue.setSectionTime(dateFormat.format(new Date(coinLog.getTimeStamp())));
+        }
         //查询总数
         long total = gameTemplate.count(Query.of(query).limit(-1).skip(-1), CoinLog.class);
-        //封装数据返回
+
+        //封装数据返
         PageVo pageVo = new PageVo();
         pageVo.setRows(revenueVos);
         pageVo.setTotal(total);

@@ -34,6 +34,6 @@ public class PlayerController {
 
     @PostMapping("/revenue")
     public ResponseResult getRevenue(@RequestBody RevenueVo revenueVo) {
-        return playerService.findTallagePage(revenueVo);
+        return playerService.findRevenuePage(revenueVo);
     }
 }

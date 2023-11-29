@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import com.admin.component.IdManager;
 import com.admin.constants.SystemConstants;
 import com.admin.domain.entity.Menu;
+import com.admin.domain.entity.RoleMenu;
 import com.admin.service.MenuService;
 import com.admin.utils.SecurityUtils;
 import com.alibaba.fastjson.JSONObject;
@@ -233,10 +234,11 @@ public class MenuServiceImpl implements MenuService {
 
         Query query = new Query();
         query.addCriteria(Criteria.where("role_id").is(roleId));
-
         query.with(Sort.by(Sort.Direction.ASC, "parent_id", "order_num"));
+        List<RoleMenu> roleMenuList = mongoTemplate.find(query, RoleMenu.class);
+        List<Long> menuIds = roleMenuList.stream().map(RoleMenu::getMenuId).collect(Collectors.toList());
 
-        return mongoTemplate.find(query, Long.class, "sys_menu");
+        return menuIds;
 
     }
 

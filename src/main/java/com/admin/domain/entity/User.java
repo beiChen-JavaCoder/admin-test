@@ -25,7 +25,10 @@ import java.util.Date;
 @NoArgsConstructor
 @Document("sys_user")
 @ApiModel("后台用户信息实体类")
-public class User implements Serializable {
+public class User implements Serializable  {
+
+    private static final long serialVersionUID = 1L;
+
     @Id
     @org.springframework.data.annotation.Id
     private Long id;
@@ -64,5 +67,6 @@ public class User implements Serializable {
     @Field("merchantEnt_id")
     @Indexed(unique = true)
     private Long merchantEntId;
+
 
 }

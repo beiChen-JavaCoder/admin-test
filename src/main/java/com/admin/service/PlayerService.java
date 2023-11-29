@@ -35,9 +35,9 @@ public interface PlayerService {
     ResponseResult findFlowPage(QueryParamsVo queryParamsVo);
 
     /**
-     * 税收列表
+     * 税收列表（从集合中获取）
      * @param revenueVo
      * @return
      */
-    ResponseResult findTallagePage(RevenueVo revenueVo);
+    ResponseResult findRevenuePage(RevenueVo revenueVo);
 }

@@ -9,15 +9,18 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginUser implements UserDetails{
+public class LoginUser  implements UserDetails ,Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private User user;
 
-    private List<String> permissions;
+    private Set<String> permissions;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -1,22 +1,24 @@
 package com.admin.config;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.fasterxml.jackson.databind.JavaType;
+import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
+import org.springframework.util.Assert;
 
 import java.nio.charset.Charset;
 
 /**
  * Redis使用FastJson序列化
- * 
- * @author sg
+ * @Author liaopj 2022/4/11
  */
-public class FastJsonRedisSerializer<T> implements RedisSerializer<T>
-{
+public class FastJson2JsonRedisSerializer<T> implements RedisSerializer<T> {
+    @SuppressWarnings("unused")
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
@@ -27,7 +29,7 @@ public class FastJsonRedisSerializer<T> implements RedisSerializer<T>
         ParserConfig.getGlobalInstance().setAutoTypeSupport(true);
     }
 
-    public FastJsonRedisSerializer(Class<T> clazz)
+    public FastJson2JsonRedisSerializer(Class<T> clazz)
     {
         super();
         this.clazz = clazz;
@@ -55,6 +57,11 @@ public class FastJsonRedisSerializer<T> implements RedisSerializer<T>
         return JSON.parseObject(str, clazz);
     }
 
+    public void setObjectMapper(ObjectMapper objectMapper)
+    {
+        Assert.notNull(objectMapper, "'objectMapper' must not be null");
+        this.objectMapper = objectMapper;
+    }
 
     protected JavaType getJavaType(Class<?> clazz)
     {

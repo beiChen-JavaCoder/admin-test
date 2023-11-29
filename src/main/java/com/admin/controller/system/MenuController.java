@@ -11,6 +11,7 @@ import com.admin.service.MenuService;
 import com.admin.utils.BeanCopyUtils;
 import com.admin.utils.SystemConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,7 +46,6 @@ public class MenuController {
         List<Long> checkedKeys = menuService.findMenuListByRoleId(roleId);
         List<MenuTreeVo> menuTreeVos = SystemConverter.buildMenuSelectTree(menus);
         RoleMenuTreeSelectVo vo = new RoleMenuTreeSelectVo(checkedKeys,menuTreeVos);
-        System.out.println(vo.toString());
         return ResponseResult.okResult(vo);
 
     }
@@ -55,6 +55,8 @@ public class MenuController {
     /**
      * 获取菜单列表
      */
+    @PreAuthorize("@ss.hasPermi('system:user:list')")
+
     @GetMapping("/list")
     public ResponseResult list(Menu menu) {
         List<Menu> menus = menuService.findMenuList(menu);
