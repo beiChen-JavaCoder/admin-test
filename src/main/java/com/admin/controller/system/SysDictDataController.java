@@ -1,5 +1,6 @@
 package com.admin.controller.system;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/system/dict/data")
+@PreAuthorize("@ss.hasRole('admin')")
 public class SysDictDataController
 
 {

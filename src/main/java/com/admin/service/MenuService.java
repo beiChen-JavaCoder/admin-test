@@ -22,7 +22,6 @@ public interface MenuService {
      */
     public List<Menu> selectRouterMenuTreeByUserId(Long userId);
 
-
     List<Menu> findMenuList(Menu menu);
 
     void addMenu(Menu menu);
@@ -36,4 +35,11 @@ public interface MenuService {
     void removeById(Long menuId);
 
     List<Long> findMenuListByRoleId(Long roleId);
+
+    /**
+     * 根据菜单ids获取权限字符
+     * @param menuIds
+     * @return
+     */
+    List<String> findMenuPamersList(Long[] menuIds);
 }

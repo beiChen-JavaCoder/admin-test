@@ -18,6 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/system/menu")
+@PreAuthorize("@ss.hasRole('admin')")
 public class MenuController {
 
     @Autowired
@@ -55,8 +56,6 @@ public class MenuController {
     /**
      * 获取菜单列表
      */
-    @PreAuthorize("@ss.hasPermi('system:user:list')")
-
     @GetMapping("/list")
     public ResponseResult list(Menu menu) {
         List<Menu> menus = menuService.findMenuList(menu);

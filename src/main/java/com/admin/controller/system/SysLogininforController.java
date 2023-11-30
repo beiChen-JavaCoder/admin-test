@@ -21,6 +21,7 @@ import java.util.List;
 @Api("登录日志模块")
 @RequestMapping("/system/logininfor")
 @RestController
+@PreAuthorize("@ss.hasRole('admin')")
 public class SysLogininforController {
 
     @Autowired

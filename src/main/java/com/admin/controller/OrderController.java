@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/order")
 @Slf4j
+@PreAuthorize("@ss.hasRole('merchant')")
 public class OrderController {
 
     @Autowired

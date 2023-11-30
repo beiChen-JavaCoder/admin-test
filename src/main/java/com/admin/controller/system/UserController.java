@@ -19,6 +19,7 @@ import com.admin.utils.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.List;
 @Api("用户模块")
 @RestController
 @RequestMapping("/system/user")
+@PreAuthorize("@ss.hasRole('admin')")
 public class UserController {
 
     @Autowired

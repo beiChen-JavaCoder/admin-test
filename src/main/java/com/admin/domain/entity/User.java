@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 用户表(User)表实体类
@@ -63,6 +64,9 @@ public class User implements Serializable  {
     //关联角色id数组，非user表字段
     @Transient
     private Long[] roleIds;
+    //权限验证角色数组，非user表字段
+    @Transient
+    private List<String> roles;
     //关联绑定商户
     @Field("merchantEnt_id")
     @Indexed(unique = true)

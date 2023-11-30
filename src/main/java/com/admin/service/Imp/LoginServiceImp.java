@@ -65,7 +65,7 @@ public class LoginServiceImp implements LoginService {
             } else {
                 //系统内部错误
                 AsyncManager.me().execute(AsyncFactory.recordLogininfor(userName, Constants.LOGIN_FAIL, e.getMessage()));
-                throw new SystemException(AppHttpCodeEnum.valueOf(e.getMessage()));
+                throw new SystemException(AppHttpCodeEnum.SYSTEM_ERROR);
             }
         }
         finally
@@ -90,6 +90,8 @@ public class LoginServiceImp implements LoginService {
         UserInfoVo userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserInfoVo.class);
         log.info("用户" + userId + "登录成功" + loginUser.getUser());
         adminUserLoginVo vo = new adminUserLoginVo(jwt, userInfoVo);
+
+
         return ResponseResult.okResult(vo);
     }
 

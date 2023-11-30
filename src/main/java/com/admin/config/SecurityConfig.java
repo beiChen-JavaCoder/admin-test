@@ -20,6 +20,11 @@ import javax.annotation.Resource;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(
+        prePostEnabled = true,
+        securedEnabled = true,
+        jsr250Enabled = true
+)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override

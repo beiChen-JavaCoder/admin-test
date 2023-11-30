@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,13 +31,13 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/merchant")
+@PreAuthorize("@ss.hasRole('merchant')")
 @Api("商户模块")
 public class MerchantController {
 
     @Autowired
     private MerchantService merchantService;
-    @Autowired
-    private MongoTemplate mongoTemplate;
+
 
     @GetMapping("/merchantList")
     @ApiOperation(value = "商户列表")

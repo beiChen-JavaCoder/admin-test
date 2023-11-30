@@ -7,6 +7,7 @@ import com.admin.enums.BusinessType;
 import com.admin.service.SysOperLogService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/system/operlog")
+@PreAuthorize("@ss.hasRole('admin')")
 public class SysOperLogController {
 
     @Autowired

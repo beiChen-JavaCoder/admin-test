@@ -20,7 +20,7 @@ public class LoginUser  implements UserDetails ,Serializable {
 
     private User user;
 
-    private Set<String> permissions;
+    private List<String> permissions;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

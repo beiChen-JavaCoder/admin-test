@@ -46,10 +46,10 @@ public class MenuServiceImpl implements MenuService {
 
 
     @Override
-    public List<String> selectPermsByUserId(Long id) {
+    public List<String> selectPermsByUserId(Long userId) {
 
-        //管理员权限
-        if (SecurityUtils.isAdmin()) {
+        if (userId == 1) {
+            //管理员权限
             Query query = new Query();
             query.addCriteria(Criteria.where("menu_type").in(SystemConstants.MENU, SystemConstants.BUTTON));
             query.addCriteria(Criteria.where("status").is(SystemConstants.STATUS_NORMAL));
@@ -58,11 +58,13 @@ public class MenuServiceImpl implements MenuService {
             List<String> perms = menus.stream()
                     .map(Menu::getPerms)
                     .collect(Collectors.toList());
-
             return perms;
+
         }
+
+
         //否则返回所具有的权限
-        return findPermsByUserId(id);
+        return findPermsByUserId(userId);
     }
 
     @Override
@@ -242,6 +244,17 @@ public class MenuServiceImpl implements MenuService {
 
     }
 
+    @Override
+    public List<String> findMenuPamersList(Long[] menuIds) {
+
+        List<Menu> menus = mongoTemplate
+                .find(Query
+                        .query(Criteria.where("_id").in(menuIds)), Menu.class);
+        List<String> parms = menus.stream().map(Menu::getPerms).collect(Collectors.toList());
+
+        return parms;
+    }
+
     //    @Override
 //    public List<Menu> selectMenuList(Menu menu) {
 //
@@ -345,11 +358,29 @@ public class MenuServiceImpl implements MenuService {
                 group("menus.perms").addToSet("menus.perms").as("perms")
         );
         AggregationResults<Map> sysUserRole = mongoTemplate.aggregate(aggregation, "sys_user_role", Map.class);
-        List<String> perms = sysUserRole.getMappedResults().stream().map(item -> {
-            return String.valueOf(item.get("perms"));
-        }).collect(Collectors.toList());
-        log.info(String.valueOf(perms));
+        List<String> perms = sysUserRole.getMappedResults()
+                .stream().map(item -> {
+                    String permsValue = String.valueOf(item.get("perms"));
+                    if (permsValue.startsWith("[")) {
+                        permsValue = permsValue.substring(1);
+                    }
+                    if (permsValue.endsWith("]")) {
+                        permsValue = permsValue.substring(0, permsValue.length() - 1);
+                    }
+                    return permsValue;
+                }).collect(Collectors.toList());
 
+//        List<String> perms = menus.stream()
+//                .map(menu -> {
+//                    String permsValue = menu.getPerms().trim();
+//                    if (permsValue.startsWith("[")) {
+//                        permsValue = permsValue.substring(1);
+//                    }
+//                    if (permsValue.endsWith("]")) {
+//                        permsValue = permsValue.substring(0, permsValue.length() - 1);
+//                    }
+//                    return permsValue;
+//                })
 
         return perms;
     }

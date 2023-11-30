@@ -16,6 +16,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +31,7 @@ import java.util.regex.Pattern;
 @RequestMapping("/game")
 @Api("游戏控制前端控制器")
 @Slf4j
+@PreAuthorize("@ss.hasRole('admin')")
 public class GameController {
 
     @Autowired
@@ -51,6 +53,7 @@ public class GameController {
 
     @GetMapping("/blood")
     @ApiOperation("金币控制台列表")
+    @PreAuthorize("@ss.hasPermi('game:blood:form')")
     public ResponseResult getGame() {
 
         return bloodPoolControlService.getScore();

@@ -66,9 +66,9 @@ public class UserServiceImp implements UserService {
         if (StringUtils.hasText(user.getUserName())) {
             criteriaList.add(Criteria.where("userName").regex(user.getUserName()));
         }
-//        if (StringUtils.hasText(user.getStatus())) {
-//            criteriaList.add(Criteria.where("status").is(user.getStatus()));
-//        }
+        if (StringUtils.hasText(user.getStatus())) {
+            criteriaList.add(Criteria.where("status").is(user.getStatus()));
+        }
 
         Criteria criteria = new Criteria();
         if (!criteriaList.isEmpty()) {

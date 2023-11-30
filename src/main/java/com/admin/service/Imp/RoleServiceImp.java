@@ -4,11 +4,13 @@ import cn.hutool.core.date.DateUtil;
 import com.admin.component.IdManager;
 import com.admin.constants.SystemConstants;
 import com.admin.domain.ResponseResult;
-import com.admin.domain.entity.Role;
-import com.admin.domain.entity.RoleMenu;
+import com.admin.domain.entity.*;
 import com.admin.domain.vo.PageVo;
+import com.admin.service.MenuService;
 import com.admin.service.RoleMenuService;
 import com.admin.service.RoleService;
+import com.admin.utils.BeanCopyUtils;
+import com.admin.utils.RedisCache;
 import com.admin.utils.SecurityUtils;
 import com.mongodb.client.result.UpdateResult;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,7 +48,12 @@ public class RoleServiceImp implements RoleService {
     private RoleMenuService roleMenuService;
     @Autowired
     private IdManager idManager;
-
+    @Autowired
+    private RedisCache redisCache;
+    @Autowired
+    private MenuService menuService;
+    @Autowired
+    private RoleService roleService;
 
     @Override
     public List<String> selectRoleKeyByUserId(Long id) {
@@ -134,8 +138,11 @@ public class RoleServiceImp implements RoleService {
     @Override
     public void updateRole(Role role) {
 
+
         role.setUpdateTime(DateUtil.date());
         role.setUpdateBy(SecurityUtils.getUserId());
+        //更新前的角色
+        String roleKey = mongoTemplate.findById(role.getId(), Role.class).getRoleKey();
         //更新原有角色
         mongoTemplate.save(role);
         //删除原有菜单角色关联
@@ -143,7 +150,31 @@ public class RoleServiceImp implements RoleService {
         //更新最新菜单角色关联
         addRoleMenu(role);
 
+        Set<Long> userIdsById = roleService.findUserIdsById(role.getId());
 
+        for (  Long id : userIdsById) {
+            LoginUser srcLoginUser =redisCache.getCacheObject("login:" + id);
+            if (srcLoginUser != null) {
+                //获取redis中的角色和权限信息
+
+                Long[] menuIds = role.getMenuIds();
+                //获取最新的menus权限
+                List<String> parms = menuService.findMenuPamersList(menuIds);
+                //更新最新的权限信息
+                srcLoginUser.setPermissions(parms);
+                //获取reids角色信息
+                List<String> roleKeys = srcLoginUser.getUser().getRoles();
+                for (int i = 0; i < roleKeys.size(); i++) {
+                    if (roleKeys.get(i).equals(roleKey)) {
+                        roleKeys.set(i, role.getRoleKey());
+                    }
+                }
+                //更新最新角色信息
+                srcLoginUser.getUser().setRoles(roleKeys);
+                //更新redis中的认证信息
+                redisCache.setCacheObject("login:" + id, srcLoginUser, 1800000);
+            }
+        }
     }
 
     @Override
@@ -163,11 +194,36 @@ public class RoleServiceImp implements RoleService {
         return ResponseResult.okResult(200,"状态修改");
     }
 
-    private void addRoleMenu(Role role) {
+    @Override
+    public List<String> findRoleById(Long[] roleIds) {
+
+            Query query = new Query();
+            query.addCriteria(Criteria
+                            .where("_id").in(roleIds))
+                    .fields().include("role_key");
+            List<Role> roleKey = mongoTemplate.find(query,Role.class);
+            List<String> roleKeys = roleKey.stream().map(Role::getRoleKey).collect(Collectors.toList());
+            return roleKeys;
+        }
+
+    @Override
+    public Set<Long> findUserIdsById(Long roleId) {
+
+        List<UserRole> userRoles = mongoTemplate
+                .find(Query.query(Criteria.where("role_id").is(roleId)), UserRole.class);
+        Set<Long> userIds = userRoles.stream().map(UserRole::getUserId).collect(Collectors.toSet());
+
+        return userIds;
+
+
+    }
+
+    private List<RoleMenu> addRoleMenu(Role role) {
         List<RoleMenu> roleMenuList = Arrays.stream(role.getMenuIds())
                 .map(memuId -> new RoleMenu(idManager.getMaxRoleId().incrementAndGet(), role.getId(), memuId))
                 .collect(Collectors.toList());
         roleMenuService.addRoleMenuBatch(roleMenuList);
+        return roleMenuList;
     }
 
 
@@ -275,11 +331,10 @@ public class RoleServiceImp implements RoleService {
                  * as: 替换名称
                  *
                  */
+                Aggregation.match(Criteria.where("user_id").is(userId)),
+//                        .and("roles.status").is("0")),
+//                        .and("roles.del_flag").is("0")),
                 Aggregation.lookup("sys_role", "role_id", "_id", "roles"),
-                Aggregation.match(Criteria.where("user_id").is(userId)
-                        .and("roles.status").is("0")
-                        .and("roles.del_flag").is("0")
-                        .and("roles.menu_type").in("C","F")),
                 Aggregation.project("roles.role_key")
         );
 

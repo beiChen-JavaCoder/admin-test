@@ -11,12 +11,14 @@ import com.admin.service.MenuService;
 import com.admin.service.RoleService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/system/role")
+@PreAuthorize("@ss.hasRole('admin')")
 public class RoleController {
 
 

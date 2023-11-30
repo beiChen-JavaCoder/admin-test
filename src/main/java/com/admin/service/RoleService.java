@@ -4,8 +4,10 @@ package com.admin.service;
 
 import com.admin.domain.ResponseResult;
 import com.admin.domain.entity.Role;
+import com.admin.domain.entity.User;
 
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -31,6 +33,21 @@ public interface RoleService {
     void updateRole(Role role);
 
     Object updateById(Role role);
+
+    /**
+     * 根據id查role_key
+     * @param roleIds
+     * @return
+     */
+    List<String> findRoleById(Long[] roleIds);
+
+    /**
+     * 根据角色id获取相关的绑定用户
+     * @param id
+     * @return
+     */
+    Set<Long> findUserIdsById(Long id);
+
 
 //    ResponseResult selectRolePage(Role role, Integer pageNum, Integer pageSize);
 

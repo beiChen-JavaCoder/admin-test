@@ -59,6 +59,7 @@ public class LoginController {
         List<String> perms = menuService.selectPermsByUserId(loginUser.getUser().getId());
         //根据用户id查询角色信息
         List<String> roleKeyList = roleService.selectRoleKeyByUserId(loginUser.getUser().getId());
+
         //获取用户信息
         User user = loginUser.getUser();
         UserInfoVo userInfoVo = BeanCopyUtils.copyBean(user, UserInfoVo.class);

@@ -10,6 +10,7 @@ import com.admin.utils.SecurityUtils;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/system/game")
-@Slf4j
+@PreAuthorize("@ss.hasRole('admin')")
 public class GameSystemController {
 
 
@@ -35,8 +36,6 @@ public class GameSystemController {
     @GetMapping("{gameId}")
     public ResponseResult turnGame(@PathVariable Long gameId) {
 
-
-        log.info("管理员:1正在对游戏"+gameId.toString()+"执行关闭操作,请谨慎操作");
         if (SecurityUtils.isAdmin()) {
         return gameService.turnGame(gameId);
         }
