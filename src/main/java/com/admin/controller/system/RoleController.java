@@ -60,15 +60,15 @@ public class RoleController {
 
     /**
      * 删除角色
-     * @param id
+     * @param ids
      *
      */
     @ApiOperation("删除角色")
     @Log(title = "删除角色",businessType = BusinessType.DELETE)
-    @DeleteMapping("/{id}")
-    public ResponseResult remove(@PathVariable(name = "id") Long id) {
+    @DeleteMapping("/{ids}")
+    public ResponseResult remove(@PathVariable(name = "ids") List<Long>  ids) {
 
-        roleService.removeById(id);
+        roleService.removeById(ids);
 
         return ResponseResult.okResult();
     }

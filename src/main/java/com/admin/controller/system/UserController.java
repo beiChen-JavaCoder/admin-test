@@ -20,8 +20,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Api("用户模块")
@@ -111,7 +114,9 @@ public class UserController {
     @Log(title = "绑定商户",businessType = BusinessType.UPDATE)
     @ApiOperation("绑定商户")
     @PutMapping("/binding")
-    public ResponseResult bingMerchant(@RequestBody BingUserMerchantDto userMerchantDto){
+    public ResponseResult bingMerchant(@RequestBody @Validated BingUserMerchantDto userMerchantDto){
+
+
 
         if (userMerchantDto.getUserId()==null&&userMerchantDto.getMerchantId()==null) {
 

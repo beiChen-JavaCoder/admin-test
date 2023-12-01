@@ -233,9 +233,19 @@ public class UserServiceImp implements UserService {
 
     @Override
     public ResponseResult bindingMerchant(BingUserMerchantDto userMerchantDto) {
+        Long userId = userMerchantDto.getUserId();
 
-        User user = mongoTemplate.findOne(Query.query(Criteria.where("_id").is(userMerchantDto.getUserId())), User.class);
         Long merchantId = userMerchantDto.getMerchantId();
+
+        MerchantEntity idMerchant = merchantService.findMerchantById(merchantId);
+        //商户已绑定其他用户
+        if (idMerchant != null) {
+            return ResponseResult.errorResult(500,"该商户已绑定其他用户,请重新选择!");
+        }
+
+        User user = mongoTemplate.findOne(Query.query(Criteria.where("_id").is(userId)), User.class);
+
+
         MerchantEntity merchant = mongoUtil.getGameTemplate().findOne(
                 Query.query(
                         Criteria.where("_id").is(merchantId)), MerchantEntity.class);
@@ -257,6 +267,15 @@ public class UserServiceImp implements UserService {
         }
         return ResponseResult.okResult(500,msg);
 }
+
+    @Override
+    public boolean unbindMerchant(List<Long> merchantIds) {
+        Update update = new Update();
+        update.set("merchant_id","");
+        UpdateResult updateResult = mongoTemplate.updateFirst(Query.query(Criteria.where("merchant_id").in(merchantIds)), update, User.class);
+
+        return updateResult.wasAcknowledged()&&updateResult.getMatchedCount()>0;
+    }
 
 
     private void insertUserRole(User user) {

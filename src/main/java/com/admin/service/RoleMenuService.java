@@ -20,4 +20,11 @@ public interface RoleMenuService {
      * @return
      */
     Set<String> findMenuByRoleId(Long[] roleIds);
+
+    /**
+     * 根据角色ids批量删除角色菜单关联
+     * @param ids
+     */
+    void removeRoleMenuByRoleIds(List<Long> ids);
+
 }

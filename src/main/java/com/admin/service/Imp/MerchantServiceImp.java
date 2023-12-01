@@ -9,8 +9,10 @@ import com.admin.domain.entity.User;
 import com.admin.domain.vo.MerchantVo;
 import com.admin.domain.vo.PageVo;
 import com.admin.enums.MerchantTypeEnum;
+import com.admin.exception.SystemException;
 import com.admin.notification.Notification;
 import com.admin.service.MerchantService;
+import com.admin.service.UserService;
 import com.admin.utils.SecurityUtils;
 import com.alibaba.fastjson2.JSONObject;
 import com.mongodb.client.result.UpdateResult;
@@ -45,6 +47,8 @@ public class MerchantServiceImp implements MerchantService {
     private IdManager merchantIdManager;
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private UserService userService;
 
     @Override
     public ResponseResult<PageVo> findMerchantPage(MerchantVo merchantVo, Integer pageNum, Integer pageSize) {
@@ -155,13 +159,17 @@ public class MerchantServiceImp implements MerchantService {
         if (deletedCount > 0 && "0".equals(remsg)) {
             //判斷商戶已被刪除，并且對用戶信息進行更新
             Update update = new Update();
-            update.set("merchantEnt_id","");
+            update.set("merchantEnt_id", "");
             UpdateResult updateResult = mongoTemplate
                     .updateMulti(Query.query(Criteria.where("merchantEnt_id").in(ids)),
                             update, User.class);
-            if (!updateResult.wasAcknowledged()&&updateResult.getMatchedCount()>0){
-                return ResponseResult.errorResult(500,"刪除用戶綁定商戶信息");
+            if (!updateResult.wasAcknowledged() && updateResult.getMatchedCount() > 0) {
+                return ResponseResult.errorResult(500, "刪除用戶綁定商戶信息");
             }
+
+            //更新用户绑定的商户信息
+            boolean re = userService.unbindMerchant(ids);
+
 
             log.info("用户id：" + userId + "删除了商户" + merchantDto);
             log.info("删除成功", "并且发送通知");
@@ -193,10 +201,32 @@ public class MerchantServiceImp implements MerchantService {
                 .findOne(Query.query(Criteria
                         .where("_id").is(user.getMerchantEntId())), MerchantEntity.class);
 
-        if (merchant==null){
-            return ResponseResult.errorResult(500,"当前用户未绑定商户");
+        if (merchant == null) {
+            return ResponseResult.errorResult(500, "当前用户未绑定商户");
         }
         return ResponseResult.okResult(merchant);
+    }
+
+    @Override
+    public ResponseResult updateMerchantByid(MerchantEntity merchant) {
+
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+        MerchantEntity save = gameTemplate.save(merchant);
+        if (save == null) {
+            ResponseResult.errorResult(500, "更新失败");
+        }
+        return ResponseResult.okResult(200, "更新成功");
+
+
+    }
+
+    @Override
+    public MerchantEntity findMerchantById(Long merchantId) {
+
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+        return gameTemplate.findById(merchantId, MerchantEntity.class);
+
+
     }
 
 

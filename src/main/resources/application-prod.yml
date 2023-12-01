@@ -1,9 +1,8 @@
+
 server:
   port: 8000
 
 spring:
-  #  profiles:
-  #    active: test
   config:
     activate:
       on-profile:
@@ -14,18 +13,19 @@ spring:
       # 主机地址
       #      host: 121.41.45.228
       # 数据库
-      database: game
-      # 默认端口是27017
-      #      port: 27017
+      database: manage
       username: root
-      password: '123456'
+      password: 'dd9876543210'
       authentication-database: admin
-      host: 192.168.10.62
-
+      host: 47.103.29.33
+      # 默认端口是27017
+      port: 27017
 
   redis:
-    host: localhost
+    host: 47.103.29.33
     port: 6379
+    username: root
+    password: dd9876543210
 
   devtools:
     restart:
@@ -35,6 +35,8 @@ spring:
       additional-paths: src/main/java
       #排除那个目录的文件不需要restart
       exclude: static/**,public/**
+  jackson:
+    time-zone: GMT+8
 
 
 
@@ -42,7 +44,7 @@ spring:
 myconfig:
   #游戏请求地址
   game:
-    ipPort: "192.168.10.62:9998"
+    ipPort: "47.103.89.32:9998"
 
   #日志配置
 #logging:
@@ -53,5 +55,5 @@ myconfig:
 #  file:
 #    level: INFO
 #    name: admin.log
-#    path: /var/myapp/
+#    path: ../logs
 #    enabled: true

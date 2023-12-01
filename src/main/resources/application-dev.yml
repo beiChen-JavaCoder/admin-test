@@ -38,7 +38,6 @@ spring:
 
 
 
-
 myconfig:
   #游戏请求地址
   game:

@@ -22,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,7 +68,15 @@ public class MerchantController {
     }
     @ApiOperation("获取商户税收百分比")
     @GetMapping("/merchantRatio")
-    public ResponseResult getMerchant() {
+    public ResponseResult getMerchantRatio() {
         return merchantService.findMerchantByUserId();
+    }
+    @Log(title = "删除商户",businessType = BusinessType.DELETE)
+    @PutMapping()
+    @ApiOperation(value = "修改商户信息")
+    public ResponseResult updateMerchant( @RequestBody @Valid MerchantEntity merchant) {
+
+
+        return merchantService.updateMerchantByid(merchant);
     }
 }

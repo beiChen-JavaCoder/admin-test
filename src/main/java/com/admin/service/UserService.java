@@ -42,4 +42,10 @@ public interface UserService {
      * @return
      */
     ResponseResult bindingMerchant(BingUserMerchantDto userMerchantDto);
+
+    /**
+     * 解绑商户
+     */
+    boolean unbindMerchant(List<Long> merchantIds);
+
 }

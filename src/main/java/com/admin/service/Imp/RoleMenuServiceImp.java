@@ -3,7 +3,10 @@ package com.admin.service.Imp;
 
 import com.admin.component.IdManager;
 import com.admin.domain.entity.RoleMenu;
+import com.admin.enums.AppHttpCodeEnum;
+import com.admin.exception.SystemException;
 import com.admin.service.RoleMenuService;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -31,7 +34,7 @@ public class RoleMenuServiceImp implements RoleMenuService {
 
     @Override
     public void addRoleMenuBatch(List<RoleMenu> roleMenuList) {
-        roleMenuList.forEach(roleMenu->{
+        roleMenuList.forEach(roleMenu -> {
             roleMenu.setId(idManager.getMaxRoleMenuId().incrementAndGet());
         });
         mongoTemplate.insertAll(roleMenuList);
@@ -49,7 +52,7 @@ public class RoleMenuServiceImp implements RoleMenuService {
 
         Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.match(Criteria.where("role_id").in(roleIds)),
-                Aggregation.lookup("sys_role_menu","menu_id","_id","menus"),
+                Aggregation.lookup("sys_role_menu", "menu_id", "_id", "menus"),
                 Aggregation.project("perms")
 
         );
@@ -57,5 +60,17 @@ public class RoleMenuServiceImp implements RoleMenuService {
 
         System.out.println(aggregate);
         return null;
+    }
+
+    @Override
+    public void removeRoleMenuByRoleIds(List<Long> ids) {
+
+
+        DeleteResult remove = mongoTemplate.remove(Query.query(Criteria.where("role_id").in(ids)), RoleMenu.class);
+        if (!remove.wasAcknowledged() && remove.getDeletedCount() > 0) {
+            throw new SystemException(AppHttpCodeEnum.valueOf("批量删除角色菜单关联失败"));
+        }
+
+
     }
 }

@@ -68,7 +68,7 @@ public class User implements Serializable  {
     @Transient
     private List<String> roles;
     //关联绑定商户
-    @Field("merchantEnt_id")
+    @Field("merchant_id")
     @Indexed(unique = true)
     private Long merchantEntId;
 

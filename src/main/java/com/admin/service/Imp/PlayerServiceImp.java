@@ -119,7 +119,7 @@ public class PlayerServiceImp implements PlayerService {
         if (queryParamsVo.getRid() > 0) {
             criteriaList.add(Criteria.where("_id").is(queryParamsVo.getRid()));
         }
-        if (queryParamsVo.getIsOnline()!=null) {
+        if (queryParamsVo.getIsOnline() != null) {
             criteriaList.add(Criteria.where("isOnline").is(queryParamsVo.getIsOnline()));
         }
         JSONObject gold = queryParamsVo.getGold();
@@ -184,11 +184,13 @@ public class PlayerServiceImp implements PlayerService {
         int pageNum = Integer.parseInt(queryParamsVo.getAttribute("pageNum"));
         int pageSize = Integer.parseInt(queryParamsVo.getAttribute("pageSize"));
         ArrayList<Criteria> criteriaList = new ArrayList<>();
+        Criteria criteria = new Criteria();
+
 
         //添加搜索条件
         //玩家id
         String rid = queryParamsVo.getAttribute("rid");
-        if ( StringUtils.hasText(rid)) {
+        if (StringUtils.hasText(rid)) {
             Long id = Long.valueOf(rid);
             criteriaList.add(Criteria.where("rid").is(id));
         }
@@ -197,6 +199,11 @@ public class PlayerServiceImp implements PlayerService {
             Long gameId = Long.valueOf(queryParamsVo.getAttribute("gameId"));
             criteriaList.add(Criteria.where("gameid").is(gameId));
         }
+        //排除掉充值增加，税收扣除，提现扣除等日志
+        criteriaList.add(Criteria.where("key").ne("充值增加"));
+        criteriaList.add(Criteria.where("key").ne("税收扣除"));
+        criteriaList.add(Criteria.where("key").ne("提现扣除"));
+
         //添加时间区间搜索条件
         if (queryParamsVo.getObject("sectionTime") != null) {
             JSONArray sectionTime = (JSONArray) queryParamsVo.getObject("sectionTime");
@@ -212,7 +219,7 @@ public class PlayerServiceImp implements PlayerService {
                 // 获取中国时区
                 ZoneId chinaZone = ZoneId.of("Asia/Shanghai");
 
-                    // 将 LocalDateTime 转换为 ZonedDateTime 对象，并应用中国时区
+                // 将 LocalDateTime 转换为 ZonedDateTime 对象，并应用中国时区
                 ZonedDateTime chinaDateTime = utcDateTime.atZone(ZoneOffset.UTC).withZoneSameInstant(chinaZone);
 
                 // 格式化为中国时区的时间字符串
@@ -221,12 +228,13 @@ public class PlayerServiceImp implements PlayerService {
 
                 strings.add(chinaTimeString);
             }
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); // 定义日期格式
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
             try {
-                Date startDate = dateFormat.parse(strings.get(0)); // 将字符串解析为日期对象
-                long startStamp = startDate.getTime(); // 获取时间戳
-                Date endDate = dateFormat.parse(strings.get(1));
-                long endStamp = endDate.getTime();
+                //解析查询日期为时间戳判断范围
+                LocalDateTime startDate = LocalDateTime.parse(strings.get(0), formatter);
+                LocalDateTime endDate = LocalDateTime.parse(strings.get(1), formatter);
+                long startStamp = startDate.toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+                long endStamp = endDate.toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
                 criteriaList.add(Criteria.where("time_stamp").gte(startStamp).lte(endStamp));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -235,13 +243,12 @@ public class PlayerServiceImp implements PlayerService {
         ;
 
 
-        Criteria criteria = new Criteria();
         if (!criteriaList.isEmpty()) {
             criteria.andOperator(criteriaList.toArray(new Criteria[0]));
         }
         //封装分页参数
         //创建分页请求和排序，默认按time_stamp升序
-        Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by(Sort.Direction.DESC,"time_stamp"));
+        Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by(Sort.Direction.DESC, "time_stamp"));
         //创建查询对象
         Query query = Query.query(criteria).with(pageable);
         List<CoinLog> coinLogs = gameTemplate.find(query, CoinLog.class);
@@ -249,14 +256,14 @@ public class PlayerServiceImp implements PlayerService {
         //对返回对象进行处理
         List<FlowVo> flowVos = BeanCopyUtils.copyBeanList(coinLogs, FlowVo.class);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        flowVos.forEach(flowVo -> {
-            coinLogs.forEach(coinLog -> {
-                Long timeStamp = coinLog.getTimeStamp();
-                //转换时间戳
-                flowVo.setCreateTime(dateFormat.format(new Date(timeStamp)));
-            });
-//            flowVo.setId(String.valueOf(flowVo.getId()));
-        });
+        // 遍历 coinLogs 和 revenueVos
+        for (int i = 0; i < coinLogs.size() && i < flowVos.size(); i++) {
+            CoinLog coinLog = coinLogs.get(i);
+            FlowVo flowVo = flowVos.get(i);
+
+            // 将 coinLog 的 timeStamp 复制到 revenue 的 sectionTime
+            flowVo.setCreateTime(dateFormat.format(new Date(coinLog.getTimeStamp())));
+        }
         //查询总数
         long total = gameTemplate.count(Query.of(query).limit(-1).skip(-1), CoinLog.class);
         //封装数据返回
@@ -281,7 +288,7 @@ public class PlayerServiceImp implements PlayerService {
         criteria.and("key").is("税收扣除");
 
         //添加时间区间搜索条件
-        JSONArray searchTime = (JSONArray)revenueVo.getSearchTime().get("searchTime");
+        JSONArray searchTime = (JSONArray) revenueVo.getSearchTime().get("searchTime");
         //添加时间区间搜索条件
         if (searchTime != null) {
 
@@ -322,7 +329,7 @@ public class PlayerServiceImp implements PlayerService {
         }
         //封装分页参数
         //创建分页请求和排序，默认按time_stamp升序
-        Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by(Sort.Direction.DESC,"time_stamp"));
+        Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by(Sort.Direction.DESC, "time_stamp"));
         //创建查询对象
         Query query = Query.query(criteria).with(pageable);
         MongoTemplate gameTemplate = mongoUtil.getGameTemplate();

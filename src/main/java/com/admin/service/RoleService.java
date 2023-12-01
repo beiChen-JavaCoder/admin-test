@@ -28,7 +28,7 @@ public interface RoleService {
 
     void addRole(Role role);
 
-    void removeById(Long id);
+    void removeById(List<Long> ids);
 
     void updateRole(Role role);
 

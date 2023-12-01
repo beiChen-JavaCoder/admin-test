@@ -67,7 +67,9 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
             criteriaList.add(Criteria.where(("merchantId")).is(merchantEntId));
         }
         //状态为未处理参数返回
-        criteriaList.add(Criteria.where(("status")).is(MerchantOrderTypeEnum.UNTREATED.getType()));
+        criteriaList.add(Criteria.where(("status"))
+                .in(MerchantOrderTypeEnum.UNTREATED.getType(),
+                        MerchantOrderTypeEnum.processed.getType()));
         Criteria criteria = new Criteria();
         if (!criteriaList.isEmpty()) {
             criteria.andOperator(criteriaList.toArray(new Criteria[0]));
@@ -98,7 +100,7 @@ public class MerchantOrderServiceImpl implements MerchantOrderService {
                 merchantOrder.setSAccountType(OrderAccountTypeEnum.Bank.getMsg());
 
             }
-            //判断用户状态
+            //判断订单状态
             if (status == MerchantOrderTypeEnum.UNTREATED.getType()) {
                 merchantOrder.setSStatus(MerchantOrderTypeEnum.UNTREATED.getMsg());
             } else if (status == MerchantOrderTypeEnum.processed.getType()) {

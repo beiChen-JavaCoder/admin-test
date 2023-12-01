@@ -128,11 +128,11 @@ public class RoleServiceImp implements RoleService {
     }
 
     @Override
-    public void removeById(Long id) {
+    public void removeById(List<Long> ids) {
         //删除角色信息
-        mongoTemplate.remove(Query.query(Criteria.where("_id").is(id)), Role.class);
+        mongoTemplate.remove(Query.query(Criteria.where("_id").in(ids)), Role.class);
         //删除角色绑定的菜单信息
-        roleMenuService.removeRoleMenuByRoleId(id);
+        roleMenuService.removeRoleMenuByRoleIds(ids);
     }
 
     @Override

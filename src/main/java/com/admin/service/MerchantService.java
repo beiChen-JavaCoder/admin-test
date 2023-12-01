@@ -40,5 +40,17 @@ public interface MerchantService {
      * @return
      */
     MerchantEntity findMerchantByUserId(Long userId);
+
+
+
     ResponseResult findMerchantByUserId();
+
+    ResponseResult updateMerchantByid(MerchantEntity merchant);
+
+    /**
+     * 通过id查商户
+     * @param merchantId
+     * @return
+     */
+    MerchantEntity findMerchantById(Long merchantId);
 }
