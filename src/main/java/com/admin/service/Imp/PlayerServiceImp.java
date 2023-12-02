@@ -4,6 +4,7 @@ import com.admin.config.MongoUtil;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.dto.MerchantDto;
 import com.admin.domain.entity.CoinLog;
+import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.entity.Player;
 import com.admin.domain.entity.User;
 import com.admin.domain.vo.*;
@@ -54,10 +55,21 @@ public class PlayerServiceImp implements PlayerService {
     @Override
     public ResponseResult<PageVo> findPlayerRechargePage(PlayerRechargeVo playerRechargeVo, Integer pageNum, Integer pageSize) {
 
-
         MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+
+        Long merchantEntId = SecurityUtils.getLoginUser().getUser().getMerchantEntId();
+
+        if (merchantEntId == null ||merchantEntId == 0){
+            return ResponseResult.errorResult(500,"用户未绑定商户，请联系管理员");
+        }
+
         // 创建查询条件
         List<Criteria> criteriaList = new ArrayList<>();
+
+        //筛选绑定了商户渠道的玩家
+        Integer channel = gameTemplate.findById(merchantEntId, MerchantEntity.class).getChannel();
+        criteriaList.add(Criteria.where("channel").is(channel));
+
         if (!(playerRechargeVo.getId() == null)) {
             criteriaList.add(Criteria.where("_id").is(playerRechargeVo.getId()));
         }
@@ -65,6 +77,9 @@ public class PlayerServiceImp implements PlayerService {
         if (!criteriaList.isEmpty()) {
             criteria.andOperator(criteriaList.toArray(new Criteria[0]));
         }
+
+        //只查询同渠道的玩家列表
+        criteriaList.add(Criteria.where("chann").is(playerRechargeVo.getId()));
 
         // 封装分页条件
         // 创建分页请求和排序，默认按_id升序
@@ -102,7 +117,7 @@ public class PlayerServiceImp implements PlayerService {
                 return ResponseResult.okResult(200, "充值成功");
             } else {
 
-                return ResponseResult.errorResult(500, "充值失败");
+                return ResponseResult.errorResult(500, "充值失败,游戏异常");
             }
         } finally {
             log.info("商户" + merchantEntId + "对玩家" + merchantDto.getUserId() + "充值" + merchantDto.getChangeNum());

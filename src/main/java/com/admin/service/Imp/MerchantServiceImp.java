@@ -194,15 +194,14 @@ public class MerchantServiceImp implements MerchantService {
     @Override
     public ResponseResult findMerchantByUserId() {
 
-        Long userId = SecurityUtils.getUserId();
+        Long merchantEntId = SecurityUtils.getLoginUser().getUser().getMerchantEntId();
         MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
-        User user = mongoTemplate.findById(userId, User.class);
         MerchantEntity merchant = gameTemplate
                 .findOne(Query.query(Criteria
-                        .where("_id").is(user.getMerchantEntId())), MerchantEntity.class);
+                        .where("_id").is(merchantEntId)), MerchantEntity.class);
 
         if (merchant == null) {
-            return ResponseResult.errorResult(500, "当前用户未绑定商户");
+            return ResponseResult.errorResult(500, "当前用户未绑定商户,无法计算提现比例");
         }
         return ResponseResult.okResult(merchant);
     }
@@ -225,6 +224,27 @@ public class MerchantServiceImp implements MerchantService {
 
         MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
         return gameTemplate.findById(merchantId, MerchantEntity.class);
+
+
+    }
+
+    @Override
+    public ResponseResult chargeById(Long id, Long num) {
+
+
+        MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
+        MerchantEntity merchantEntity = gameTemplate.findOne(Query.query(Criteria.where("_id").is(id)), MerchantEntity.class);
+
+        merchantEntity.setGold(merchantEntity.getGold()+num);
+
+        MerchantEntity save = gameTemplate.save(merchantEntity);
+        MerchantDto merchantDto = new MerchantDto();
+        merchantDto.setType(MerchantTypeEnum.LIST.getType());
+        String string = notification.notificationMerchant(merchantDto);
+        if (string.equals("1")){
+            return ResponseResult.errorResult(500,"通知游戏失败，请联系管理员");
+        }
+        return ResponseResult.okResult(200,"充值成功");
 
 
     }

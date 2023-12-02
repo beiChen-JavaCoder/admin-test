@@ -65,6 +65,8 @@ public class UserAndMerchantVo {
 
     int ratio;
 
+    Integer channel;
+
 
 
 

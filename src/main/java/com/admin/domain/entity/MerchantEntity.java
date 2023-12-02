@@ -54,9 +54,9 @@ public class MerchantEntity {
     @Column(name = "gold")
     Long gold;
     /**
-     * 渠道
+     * 渠道号
      */
     @Column(name = "channel")
-    Long channel;
+    int channel;
 
 }

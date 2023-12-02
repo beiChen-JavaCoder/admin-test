@@ -32,7 +32,6 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/merchant")
-@PreAuthorize("@ss.hasRole('merchant')")
 @Api("商户模块")
 public class MerchantController {
 
@@ -42,6 +41,7 @@ public class MerchantController {
 
     @GetMapping("/merchantList")
     @ApiOperation(value = "商户列表")
+    @PreAuthorize("@ss.hasPermi('content:item:list')")
     public ResponseResult<PageVo> getMerchantList(MerchantVo merchantVo, Integer pageNum, Integer pageSize) {
 
 
@@ -50,6 +50,7 @@ public class MerchantController {
     @Log(title = "删除商户",businessType = BusinessType.DELETE)
     @DeleteMapping("/{merchantIds}")
     @ApiOperation(value = "删除商户")
+    @PreAuthorize("@ss.hasPermi('content:item:list')")
     public ResponseResult delMerchant(@PathVariable List<Long> merchantIds) {
 //        if (merchantIds.contains(SecurityUtils.getUserId())) {
 //            return ResponseResult.errorResult(500, "不能删除当前你正在使用的用户所绑定的商户");
@@ -58,25 +59,35 @@ public class MerchantController {
         return ResponseResult.okResult();
     }
 
-    @Log(title = "新增商户",businessType = BusinessType.INSERT)
-    @PostMapping()
-    @ApiOperation("新增商户")
-    public ResponseResult addMerchant(@RequestBody MerchantVo merchantVo) {
-
-        MerchantEntity merchantEntity = BeanCopyUtils.copyBean(merchantVo, MerchantEntity.class);
-        return merchantService.addMerchant(merchantEntity);
-    }
+//    @Log(title = "新增商户",businessType = BusinessType.INSERT)
+//    @PostMapping()
+//    @ApiOperation("新增商户")
+//    @PreAuthorize("@ss.hasPermi('content:item:list')")
+//    public ResponseResult addMerchant(@RequestBody MerchantVo merchantVo) {
+//
+//        MerchantEntity merchantEntity = BeanCopyUtils.copyBean(merchantVo, MerchantEntity.class);
+//        return merchantService.addMerchant(merchantEntity);
+//    }
     @ApiOperation("获取商户税收百分比")
     @GetMapping("/merchantRatio")
+    @PreAuthorize("@ss.hasPermi('game:revenue:list')")
     public ResponseResult getMerchantRatio() {
         return merchantService.findMerchantByUserId();
     }
-    @Log(title = "删除商户",businessType = BusinessType.DELETE)
+    @Log(title = "修改商户信息",businessType = BusinessType.UPDATE)
     @PutMapping()
     @ApiOperation(value = "修改商户信息")
+    @PreAuthorize("@ss.hasPermi('content:item:list')")
     public ResponseResult updateMerchant( @RequestBody @Valid MerchantEntity merchant) {
 
-
         return merchantService.updateMerchantByid(merchant);
+    }
+    @Log(title = "修改商户信息",businessType = BusinessType.UPDATE)
+    @GetMapping()
+    @ApiOperation(value = "商户充值")
+    @PreAuthorize("@ss.hasPermi('content:item:list')")
+    public ResponseResult charge(Long merchantId,Long num) {
+
+        return merchantService.chargeById(merchantId,num);
     }
 }

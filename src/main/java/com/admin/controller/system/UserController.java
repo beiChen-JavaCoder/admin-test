@@ -4,6 +4,7 @@ import com.admin.annotation.Log;
 import com.admin.domain.ResponseResult;
 import com.admin.domain.dto.ChangeUserStatusDto;
 import com.admin.domain.dto.BingUserMerchantDto;
+import com.admin.domain.entity.LoginUser;
 import com.admin.domain.entity.MerchantEntity;
 import com.admin.domain.entity.Role;
 import com.admin.domain.entity.User;
@@ -15,6 +16,7 @@ import com.admin.exception.SystemException;
 import com.admin.service.MerchantService;
 import com.admin.service.RoleInfoService;
 import com.admin.service.UserService;
+import com.admin.utils.BeanCopyUtils;
 import com.admin.utils.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -25,6 +27,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 
 @Api("用户模块")
@@ -39,6 +42,26 @@ public class UserController {
     private RoleInfoService roleService;
     @Autowired
     private MerchantService merchantService;
+
+
+
+    /**
+     * 个人信息
+     */
+    @GetMapping("/profile")
+    public ResponseResult profile()
+    {
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        User user = loginUser.getUser();
+
+        MerchantEntity merchant = merchantService.findMerchantByUserId(loginUser.getUser().getId());
+
+        HashMap<String, Object> userAndMerchant = new HashMap<>();
+        userAndMerchant.put("user",user);
+        userAndMerchant.put("merchant",merchant);
+
+        return ResponseResult.okResult(userAndMerchant);
+    }
 
     /**
      * 获取用户列表

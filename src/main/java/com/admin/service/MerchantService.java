@@ -53,4 +53,7 @@ public interface MerchantService {
      * @return
      */
     MerchantEntity findMerchantById(Long merchantId);
+
+
+    ResponseResult chargeById(Long id, Long num);
 }

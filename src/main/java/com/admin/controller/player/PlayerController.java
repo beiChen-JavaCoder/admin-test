@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 @Api("玩家管理")
 @RestController()
 @RequestMapping("/player")
-@PreAuthorize("@ss.hasRole('merchant')")
 public class PlayerController {
 
 
@@ -25,16 +24,19 @@ public class PlayerController {
     private PlayerService playerService;
 
     @PostMapping("/list")
+    @PreAuthorize("@ss.hasPermi('player:list:list')")
     public ResponseResult getList(@RequestBody PlayerVo queryParamsVo) {
         return playerService.findPlayerPage(queryParamsVo);
     }
 
     @PostMapping("/flow")
+    @PreAuthorize("@ss.hasPermi('player:flow:list')")
     public ResponseResult getFlow(@RequestBody QueryParamsVo queryParamsVo) {
         return playerService.findFlowPage(queryParamsVo);
      }
 
     @PostMapping("/revenue")
+    @PreAuthorize("@ss.hasPermi('game:revenue:list')")
     public ResponseResult getRevenue(@RequestBody RevenueVo revenueVo) {
         return playerService.findRevenuePage(revenueVo);
     }

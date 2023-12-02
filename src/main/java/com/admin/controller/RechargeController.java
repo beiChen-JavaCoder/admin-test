@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 @Api("充值管理模块")
 @RestController
 @RequestMapping("/recharge")
-@PreAuthorize("@ss.hasRole('merchant')")
 public class RechargeController {
 
     @Autowired
@@ -28,7 +27,8 @@ public class RechargeController {
 
 
     @GetMapping("/list")
-    @ApiOperation(value = "角色列表")
+    @ApiOperation(value = "玩家列表")
+    @PreAuthorize("@ss.hasPermi('content:charge:list')")
     public ResponseResult<PageVo> getRoleList(PlayerRechargeVo playerRechargeVo,Integer pageNum,Integer pageSize) {
 
         return playerService.findPlayerRechargePage(playerRechargeVo,pageNum,pageSize);
@@ -37,6 +37,7 @@ public class RechargeController {
     @Log(title = "充值金币",businessType = BusinessType.UPDATE)
     @PostMapping("/updateGold")
     @ApiOperation("充值角色金币")
+    @PreAuthorize("@ss.hasPermi('content:charge:list')")
     public ResponseResult updateGold(@RequestBody RechargeVo rechargeVo) {
 
 

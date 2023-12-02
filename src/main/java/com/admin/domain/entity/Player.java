@@ -90,4 +90,9 @@ public class Player {
     //当前冻结时间
     private long freeze_time;
 
+    /**
+     * 渠道号
+     */
+    @Column(name = "channel")
+    int channel;
 }

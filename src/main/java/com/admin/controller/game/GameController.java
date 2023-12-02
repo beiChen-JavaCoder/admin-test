@@ -29,9 +29,8 @@ import java.util.regex.Pattern;
  */
 @RestController
 @RequestMapping("/game")
-@Api("游戏控制前端控制器")
+@Api("游戏控制器")
 @Slf4j
-@PreAuthorize("@ss.hasRole('admin')")
 public class GameController {
 
     @Autowired
@@ -63,6 +62,7 @@ public class GameController {
     @Log(title = "修改金币控制台", businessType = BusinessType.UPDATE)
     @PutMapping("/blood")
     @ApiOperation("修改金币控制台")
+    @PreAuthorize("@ss.hasPermi('game:blood:form')")
     public ResponseResult updateGame(@RequestBody GameControlVo gameControlVo) {
         ResponseResult responseResult = checkGoldParameter(gameControlVo);
 
@@ -82,6 +82,7 @@ public class GameController {
 
     @GetMapping("/p2p")
     @ApiOperation("点控控制台列表")
+    @PreAuthorize("@ss.hasPermi('game:ptwop:form')")
     public ResponseResult getPtp() {
         return userControlService.userControlList();
     }
@@ -89,6 +90,7 @@ public class GameController {
     @Log(title = "更改点控控制台", businessType = BusinessType.UPDATE)
     @PutMapping("/p2p")
     @ApiOperation("更改点控控制台")
+    @PreAuthorize("@ss.hasPermi('game:ptwop:form')")
     public ResponseResult updateGameUser(@RequestBody UserControl userControl) {
         return userControlService.updateUserControl(userControl);
 
@@ -97,6 +99,7 @@ public class GameController {
     @Log(title = "添加点控控制", businessType = BusinessType.INSERT)
     @PostMapping("/p2p")
     @ApiOperation("添加点控控制")
+    @PreAuthorize("@ss.hasPermi('game:ptwop:form')")
     public ResponseResult addUserControl(@RequestBody UserControl userControl) {
 
         return userControlService.addUserControl(userControl);
@@ -105,6 +108,7 @@ public class GameController {
 
     @GetMapping("/robot")
     @ApiOperation("机器人控制台列表")
+    @PreAuthorize("@ss.hasPermi('game:robot:control')")
     public ResponseResult getRobotControl() {
         return robotService.robotControlList();
     }
@@ -115,6 +119,7 @@ public class GameController {
     @Log(title = "上传机器人", businessType = BusinessType.INSERT)
     @PostMapping("/robot")
     @ApiOperation("上传机器人（robotName）")
+    @PreAuthorize("@ss.hasPermi('game:robot:list')")
     public ResponseResult uploadFile(@RequestParam("file") MultipartFile file) {
 
 
@@ -124,6 +129,7 @@ public class GameController {
     @Log(title = "更改机器人控制", businessType = BusinessType.UPDATE)
     @PutMapping("/robot")
     @ApiOperation("更改机器人控制")
+    @PreAuthorize("@ss.hasPermi('game:robot:control')")
     public ResponseResult updateRobot(@RequestBody RobotBeanVo robotVo) {
 
         return robotService.updateRobot(robotVo);
@@ -132,12 +138,14 @@ public class GameController {
 
     @GetMapping("/robot/list")
     @ApiOperation("机器人名称列表")
+    @PreAuthorize("@ss.hasPermi('game:robot:list')")
     public ResponseResult getRobotList(Integer pageNum, Integer pageSize) {
         return robotService.findRobotPage(pageNum, pageSize);
     }
     @Log(title = "删除机器人", businessType = BusinessType.DELETE)
     @DeleteMapping("/robot/list/{robotId}")
     @ApiOperation("删除机器人")
+    @PreAuthorize("@ss.hasPermi('game:robot:list')")
     public ResponseResult delRobot(@PathVariable Long robotId) {
         return robotService.delRobot(robotId);
     }
@@ -147,6 +155,7 @@ public class GameController {
     @Log(title = "修改机器人信息", businessType = BusinessType.INSERT)
     @PostMapping("/robot/update")
     @ApiOperation("修改机器人信息")
+    @PreAuthorize("@ss.hasPermi('game:robot:list')")
     public ResponseResult updateRobotName(@RequestBody Robot robot) {
         return robotService.updateRobotName(robot);
     }

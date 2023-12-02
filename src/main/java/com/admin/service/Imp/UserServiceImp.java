@@ -112,6 +112,7 @@ public class UserServiceImp implements UserService {
 
         try {
             //新增商户
+            merchantEntity.setGold(0L);
             merchantService.addMerchant(merchantEntity);
             MongoTemplate gameTemplate = mongoUtil.getGameTemplate();
             MerchantEntity reMerchant = gameTemplate.findOne(Query.query(Criteria.where("name")

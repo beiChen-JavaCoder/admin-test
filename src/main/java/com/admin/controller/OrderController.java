@@ -27,7 +27,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/order")
 @Slf4j
-@PreAuthorize("@ss.hasRole('merchant')")
 public class OrderController {
 
     @Autowired
@@ -35,6 +34,7 @@ public class OrderController {
 
     @ApiOperation("订单列表")
     @GetMapping("/list")
+    @PreAuthorize("@ss.hasPermi('content:order:list')")
     public ResponseResult<PageVo> list(MerchantOrderVo merchantOrderVo) {
 
         return merchantOrderService.findOrderPage(merchantOrderVo);
@@ -44,6 +44,7 @@ public class OrderController {
     @Log(title = "订单审核", businessType = BusinessType.UPDATE)
     @ApiOperation("订单审核")
     @PutMapping
+    @PreAuthorize("@ss.hasPermi('content:order:list')")
     public ResponseResult update(@RequestBody MerchantOrderEntity merchantOrder) {
 
         //校验凭证不能为空
