@@ -38,7 +38,9 @@ spring:
   jackson:
     time-zone: GMT+8
 
-
+#禁用swagger
+knife4j:
+  enable: false
 
 
 myconfig:

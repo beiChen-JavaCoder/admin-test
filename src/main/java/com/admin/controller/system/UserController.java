@@ -33,7 +33,6 @@ import java.util.List;
 @Api("用户模块")
 @RestController
 @RequestMapping("/system/user")
-@PreAuthorize("@ss.hasRole('admin')")
 public class UserController {
 
     @Autowired
@@ -68,6 +67,7 @@ public class UserController {
      */
     @ApiOperation("用户列表")
     @GetMapping("/list")
+    @PreAuthorize("@ss.hasPermi('system:user:list')")
     public ResponseResult list(User user, Integer pageNum, Integer pageSize) {
         return userService.findUserPage(user, pageNum, pageSize);
     }
@@ -76,6 +76,7 @@ public class UserController {
      * 新增用户
      */
     @ApiOperation("新增用户")
+    @PreAuthorize("@ss.hasPermi('system:user:list')")
     @Log(title = "新增用户",businessType = BusinessType.INSERT)
     @PostMapping
     public ResponseResult add(@RequestBody UserAndMerchantVo userAndMerchantVo) {
@@ -93,6 +94,7 @@ public class UserController {
      */
     @ApiOperation("用户详情")
     @GetMapping(value = {"/{userId}"})
+    @PreAuthorize("@ss.hasPermi('system:user:list')")
     public ResponseResult getUserInfoAndRoleIds(@PathVariable(value = "userId") Long userId) {
         List<Role> roles = roleService.findRoleAll();
         User user = userService.findUserById(userId);
@@ -109,6 +111,7 @@ public class UserController {
     @ApiOperation("删除用户")
     @Log(title = "删除用户",businessType = BusinessType.DELETE)
     @DeleteMapping("/{userIds}")
+    @PreAuthorize("@ss.hasPermi('system:user:list')")
     public ResponseResult remove(@PathVariable List<Long> userIds) {
         if (userIds.contains(SecurityUtils.getUserId())) {
             return ResponseResult.errorResult(500, "不能删除当前你正在使用的用户");
@@ -123,6 +126,7 @@ public class UserController {
     @ApiOperation("修改用户")
     @Log(title = "修改用户",businessType = BusinessType.UPDATE)
     @PutMapping
+    @PreAuthorize("@ss.hasPermi('system:user:list')")
     public ResponseResult edit(@RequestBody User user) {
         userService.updateUser(user);
         return ResponseResult.okResult();
@@ -130,6 +134,7 @@ public class UserController {
     @ApiOperation("修改状态")
     @Log(title = "用户修改状态",businessType = BusinessType.UPDATE)
     @PutMapping("/changeStatus")
+    @PreAuthorize("@ss.hasPermi('system:user:list')")
     public ResponseResult changeStatus(@RequestBody ChangeUserStatusDto userStatusDto) {
 
         return ResponseResult.okResult(userService.updateById(userStatusDto));
@@ -137,6 +142,7 @@ public class UserController {
     @Log(title = "绑定商户",businessType = BusinessType.UPDATE)
     @ApiOperation("绑定商户")
     @PutMapping("/binding")
+    @PreAuthorize("@ss.hasPermi('system:user:list')")
     public ResponseResult bingMerchant(@RequestBody @Validated BingUserMerchantDto userMerchantDto){
 
 

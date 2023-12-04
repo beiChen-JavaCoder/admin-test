@@ -59,17 +59,19 @@ public class PlayerServiceImp implements PlayerService {
 
         Long merchantEntId = SecurityUtils.getLoginUser().getUser().getMerchantEntId();
 
-        if (merchantEntId == null ||merchantEntId == 0){
-            return ResponseResult.errorResult(500,"用户未绑定商户，请联系管理员");
+
+        if ((merchantEntId == null || merchantEntId == 0) && !SecurityUtils.isAdmin()) {
+            return ResponseResult.errorResult(500, "用户未绑定商户，请联系管理员");
         }
 
         // 创建查询条件
         List<Criteria> criteriaList = new ArrayList<>();
 
         //筛选绑定了商户渠道的玩家
-        Integer channel = gameTemplate.findById(merchantEntId, MerchantEntity.class).getChannel();
-        criteriaList.add(Criteria.where("channel").is(channel));
-
+        if (merchantEntId!=null&&merchantEntId != 0L ){
+            Integer channel = gameTemplate.findById(merchantEntId, MerchantEntity.class).getChannel();
+            criteriaList.add(Criteria.where("channel").is(channel));
+        }
         if (!(playerRechargeVo.getId() == null)) {
             criteriaList.add(Criteria.where("_id").is(playerRechargeVo.getId()));
         }
